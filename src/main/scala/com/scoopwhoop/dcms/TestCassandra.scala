@@ -12,9 +12,9 @@ object TestCassandra {
             .setAppName("TestCassandra")
         val sparkContext = new SparkContext(conf)
         val rdd = sparkContext.cassandraTable("test", "kv")
-        Logger.logInfo(rdd.count)
-        Logger.logInfo(rdd.first)
-        Logger.logInfo(rdd.map(_.getInt("value")).sum)
+        Logger.logInfo(rdd.count.toString)
+        Logger.logInfo(rdd.first.toString)
+        Logger.logInfo(rdd.map(_.getInt("value")).sum.toString)
         sparkContext.stop()
     }
 }
