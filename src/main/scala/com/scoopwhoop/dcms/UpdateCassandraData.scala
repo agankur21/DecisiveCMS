@@ -15,7 +15,7 @@ object UpdateCassandraData {
     
     def updateUsersData(eventData: DataFrame,keySpace:String,table:String):Unit = {
         val users = eventData.select("properties.distinct_id","properties.$browser","properties.$browser_version",
-                                    "properties.$Region,properties.$city,properties.mp_country_code,properties.$os",
+                                    "properties.$region","properties.$city","properties.mp_country_code","properties.$os",
                                         "properties.device")
         users.rdd.saveToCassandra(keySpace, table, SomeColumns("user_id","browser","browser_version","region",
                                     "city","country_code","os","device"))

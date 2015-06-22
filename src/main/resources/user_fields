@@ -1,7 +1,7 @@
 user_id,properties.distinct_id
 browser,properties.$browser
 browser_version,properties.$browser_version
-region,properties.$Region
+region,properties.$region
 city,properties.$city
 country_code,properties.mp_country_code
 os,properties.$os
