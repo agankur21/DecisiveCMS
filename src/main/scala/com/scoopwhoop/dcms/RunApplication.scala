@@ -1,7 +1,4 @@
 package com.scoopwhoop.dcms
-
-import com.scoopwhoop.dcms.Logger
-import com.scoopwhoop.dcms.UpdateCassandraData
 import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.sql.{SQLContext,DataFrame}
 import org.joda.time.DateTime
