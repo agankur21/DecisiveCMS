@@ -43,7 +43,7 @@ ${CASSANDRA_HOME}/bin/cqlsh -e "
         user_id                     text,
         event                       text,
         time                        bigint,
-        from                        text,
+        from_url                    text,
         event_destination           text,
         screen_location             text,
         initial_referrer            text,
