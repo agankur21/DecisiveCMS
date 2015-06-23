@@ -57,5 +57,6 @@ object CommonFunctions {
         
     }
 
+    def mapRowto
 
 }

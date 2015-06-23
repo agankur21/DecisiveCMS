@@ -1,5 +1,5 @@
 #!/bin/bash
-export CASSANDRA_HOME=/usr/local/apache-cassandra-2.1.6
+export DATASTORE_HOME=/usr/local/apache-cassandra-2.1.6
 export DCMS_HOME=/mnt/git-repo/DecisiveCMS
 
 source "${DCMS_HOME}/scripts/common_func.sh";
@@ -7,7 +7,7 @@ source "${DCMS_HOME}/scripts/check_user.sh";
 
 loggerInfo "Creating KeySpace: dcms";
 
-${CASSANDRA_HOME}/bin/cqlsh -e "
+${DATASTORE_HOME}/bin/cqlsh -e "
     CREATE KEYSPACE IF NOT EXISTS dcms
     WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 }
 "
@@ -15,7 +15,7 @@ checkStatusANDErrMsgExit "ERROR : Creating Keyspace";
 
 
 loggerInfo "Creating Tables in Keyspace dcms";
-${CASSANDRA_HOME}/bin/cqlsh -e "
+${DATASTORE_HOME}/bin/cqlsh -e "
     USE dcms;
     
     CREATE TABLE IF NOT EXISTS users(
@@ -54,7 +54,7 @@ ${CASSANDRA_HOME}/bin/cqlsh -e "
         utm_content                 text,
         utm_medium                  text,
         utm_source                  text,
-        PRIMARY KEY (url,user_id,event)
+        PRIMARY KEY (url,user_id,event,time)
     )
     
 "
