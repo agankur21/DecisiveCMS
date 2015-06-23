@@ -1,8 +1,8 @@
-user_id,properties.distinct_id
-browser,properties.$browser
-browser_version,properties.$browser_version
-region,properties.$region
-city,properties.$city
-country_code,properties.mp_country_code
-os,properties.$os
-device,properties.device
+user_id
+browser
+browser_version
+region
+city
+country_code
+os
+device

@@ -11,8 +11,9 @@ object RunApplication {
             .setAppName("RunApplication")
         val sparkContext = new SparkContext(conf)
         val eventsData = UpdateCassandraData.getData(sparkContext,"/home/cassandra/ScoopWhoop_2015-06-01")
-        UpdateCassandraData.updateUsersData(eventsData,"dcms","users")
-        UpdateCassandraData.updatePageData(eventsData,"dcms","pages")
+        UpdateCassandraData.updateEventsData(eventsData,"dcms","events")
+        UpdateCassandraData.updateUsersData(sparkContext,"dcms","users")
+        UpdateCassandraData.updatePageData(sparkContext,"dcms","pages")
         sparkContext.stop()
     }
 }

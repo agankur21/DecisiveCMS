@@ -56,7 +56,10 @@ object CommonFunctions {
         lines.toList
         
     }
-
-    def mapRowto
+    
+    case class Users(user_id:String,browser : String,browser_version:String,region:String,city:String,country_code:String,
+                     os: String,device:String)
+    
+    case class Pages(url:String,title:String,category:String,author:String,screen_height:String, screen_width:String)
 
 }
