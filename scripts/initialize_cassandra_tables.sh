@@ -82,11 +82,11 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         mp_keyword                  text,
         mp_lib                      text,
         lib_version                 text,
-        user_data                   frozen <user_info>
+        user_data                   frozen <user_info>,
         referrer_data               frozen <referrer>,
         utm_data                    frozen <utm>,
         PRIMARY KEY ((url,user_id,event),time))
-        WITH CLUSTERING ORDER BY (time DESC);
+        WITH CLUSTERING ORDER BY (time DESC)
         
 
 

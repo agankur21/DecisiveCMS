@@ -20,28 +20,32 @@ object UpdateCassandraData  {
 
     
     def eventMapper(row:Row): CommonFunctions.Events={
-        val user_data = UDTValue.fromMap(Map("browser" -> row(tableEventFieldsIndexMap("browser")),
-            "browser_version" -> row(tableEventFieldsIndexMap("browser_version")),
-            "region" -> row(tableEventFieldsIndexMap("region")),
-            "city" -> row(tableEventFieldsIndexMap("city")),
-            "country_code" -> row(tableEventFieldsIndexMap("country_code")),
-            "os" -> row(tableEventFieldsIndexMap("os")),
-            "device" -> row(tableEventFieldsIndexMap("device")),
-            "device_type" -> row(tableEventFieldsIndexMap("device_type"))))
-        val referrer_data = UDTValue.fromMap(Map("initial_referrer" -> row(tableEventFieldsIndexMap("initial_referrer")),
-            "initial_referring_domain" -> row(tableEventFieldsIndexMap("initial_referring_domain")),
-            "referrer" -> row(tableEventFieldsIndexMap("referrer")),
-            "referring_domain" -> row(tableEventFieldsIndexMap("referring_domain"))))
-        val utm_data = UDTValue.fromMap(Map("utm_campaign" -> row(tableEventFieldsIndexMap("utm_campaign")),
-            "utm_content" -> row(tableEventFieldsIndexMap("utm_content")),
-            "utm_medium" -> row(tableEventFieldsIndexMap("utm_medium")),
-            "utm_source" -> row(tableEventFieldsIndexMap("utm_medium"))))
+        val user_data = UDTValue.fromMap(Map("browser" -> row(tableEventFieldsIndexMap("browser")).toString,
+            "browser_version" -> row(tableEventFieldsIndexMap("browser_version")).toString,
+            "region" -> row(tableEventFieldsIndexMap("region")).toString,
+            "city" -> row(tableEventFieldsIndexMap("city")).toString,
+            "country_code" -> row(tableEventFieldsIndexMap("country_code")).toString,
+            "os" -> row(tableEventFieldsIndexMap("os")).toString,
+            "device" -> row(tableEventFieldsIndexMap("device")).toString,
+            "device_type" -> row(tableEventFieldsIndexMap("device_type")).toString))
+        println("Reached here1")
+        val referrer_data = UDTValue.fromMap(Map("initial_referrer" -> row(tableEventFieldsIndexMap("initial_referrer")).toString,
+            "initial_referring_domain" -> row(tableEventFieldsIndexMap("initial_referring_domain")).toString,
+            "referrer" -> row(tableEventFieldsIndexMap("referrer")).toString,
+            "referring_domain" -> row(tableEventFieldsIndexMap("referring_domain")).toString))
+        println("Reached here2")
+        val utm_data = UDTValue.fromMap(Map("utm_campaign" -> row(tableEventFieldsIndexMap("utm_campaign")).toString,
+            "utm_content" -> row(tableEventFieldsIndexMap("utm_content")).toString,
+            "utm_medium" -> row(tableEventFieldsIndexMap("utm_medium")).toString,
+            "utm_source" -> row(tableEventFieldsIndexMap("utm_medium")).toString))
+        println("Reached here3")
         val eventRow = CommonFunctions.Events(row(tableEventFieldsIndexMap("url")).toString,row(tableEventFieldsIndexMap("user_id")).toString,row(tableEventFieldsIndexMap("event")).toString,
             row(tableEventFieldsIndexMap("time")).toString,row(tableEventFieldsIndexMap("title")).toString,row(tableEventFieldsIndexMap("category")).toString,
             row(tableEventFieldsIndexMap("author")).toString,row(tableEventFieldsIndexMap("screen_height")).toString,row(tableEventFieldsIndexMap("screen_width")).toString,
             row(tableEventFieldsIndexMap("from_url")).toString,row(tableEventFieldsIndexMap("event_destination")).toString,row(tableEventFieldsIndexMap("screen_location")).toString,
             row(tableEventFieldsIndexMap("search_engine")).toString,row(tableEventFieldsIndexMap("mp_keyword")).toString,row(tableEventFieldsIndexMap("mp_lib")).toString,
             row(tableEventFieldsIndexMap("lib_version")).toString,user_data,referrer_data,utm_data)
+        println("Reached here4")
         return eventRow;
     }
     

@@ -23,7 +23,7 @@ properties.$initial_referring_domain,initial_referring_domain
 properties.$referrer,referrer
 properties.$search_engine,search_engine
 properties.mp_keyword,mp_keyword
-properties.$mp_lib,mp_lib
+properties.mp_lib,mp_lib
 properties.$lib_version,lib_version
 properties.$referring_domain,referring_domain
 properties.utm_campaign,utm_campaign
