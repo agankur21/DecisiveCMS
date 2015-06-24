@@ -26,9 +26,11 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         city                        text,
         country_code                text,
         os                          text,
-        device                      text
+        device                      text,
+        device_type                 text
     );
     
+
     CREATE TABLE IF NOT EXISTS pages(
         url                         text PRIMARY KEY,
         title                       text,
@@ -38,11 +40,21 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         screen_width                text
     );
     
-    CREATE TABLE IF NOT EXISTS events(
-        url                         text,
-        user_id                     text,
-        event                       text,
-        time                        text,
+    CREATE TYPE IF NOT EXISTS utm(
+        utm_campaign                text,
+        utm_content                 text,
+        utm_medium                  text,
+        utm_source                  text,
+    );
+    
+    CREATE TYPE IF NOT EXISTS referrer(
+        initial_referrer            text,
+        initial_referring_domain    text,
+        referrer                    text,
+        referring_domain            text,
+    );
+    
+    CREATE TYPE IF NOT EXISTS user_info(
         browser                     text,
         browser_version             text,
         region                      text,
@@ -50,7 +62,14 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         country_code                text,
         os                          text,
         device                      text,
-        device_type                 text,
+        device_type                 text
+    );
+
+    CREATE TABLE IF NOT EXISTS events(
+        url                         text,
+        user_id                     text,
+        event                       text,
+        time                        text,
         title                       text,
         category                    text,
         author                      text,
@@ -59,19 +78,16 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         from_url                    text,
         event_destination           text,
         screen_location             text,
-        initial_referrer            text,
-        initial_referring_domain    text,
-        referrer                    text,
         search_engine               text,  
         mp_keyword                  text,
         mp_lib                      text,
         lib_version                 text,
-        referring_domain            text,
-        utm_campaign                text,
-        utm_content                 text,
-        utm_medium                  text,
-        utm_source                  text,
-        PRIMARY KEY (url,user_id,event,time)
-     )
+        user_data                   frozen <user_info>
+        referrer_data               frozen <referrer>,
+        utm_data                    frozen <utm>,
+        PRIMARY KEY ((url,user_id,event),time))
+        WITH CLUSTERING ORDER BY (time DESC);
+        
+
 
 "

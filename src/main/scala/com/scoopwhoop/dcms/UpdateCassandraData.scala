@@ -5,39 +5,60 @@ import org.joda.time.DateTime
 import org.apache.spark.rdd.RDD
 import com.datastax.spark.connector._
 import scala.io.Source
+import com.datastax.spark.connector.UDTValue
 
+object UpdateCassandraData  {
 
-object UpdateCassandraData {
+    val eventFields = CommonFunctions.readResourceFile("event_fields")
+    val jsonFields = eventFields.map(x =>x.split(",")(0))
+    val tableEventFieldsIndexMap  = eventFields.map(x =>x.split(",")(1)).zipWithIndex.toMap
+    
     def getData(sparkContext: SparkContext, path: String): DataFrame = {
         val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)
         return  sqlContext.read.json(path)
     }
 
     
+    def eventMapper(row:Row): CommonFunctions.Events={
+        val user_data = UDTValue.fromMap(Map("browser" -> row(tableEventFieldsIndexMap("browser")),
+            "browser_version" -> row(tableEventFieldsIndexMap("browser_version")),
+            "region" -> row(tableEventFieldsIndexMap("region")),
+            "city" -> row(tableEventFieldsIndexMap("city")),
+            "country_code" -> row(tableEventFieldsIndexMap("country_code")),
+            "os" -> row(tableEventFieldsIndexMap("os")),
+            "device" -> row(tableEventFieldsIndexMap("device")),
+            "device_type" -> row(tableEventFieldsIndexMap("device_type"))))
+        val referrer_data = UDTValue.fromMap(Map("initial_referrer" -> row(tableEventFieldsIndexMap("initial_referrer")),
+            "initial_referring_domain" -> row(tableEventFieldsIndexMap("initial_referring_domain")),
+            "referrer" -> row(tableEventFieldsIndexMap("referrer")),
+            "referring_domain" -> row(tableEventFieldsIndexMap("referring_domain"))))
+        val utm_data = UDTValue.fromMap(Map("utm_campaign" -> row(tableEventFieldsIndexMap("utm_campaign")),
+            "utm_content" -> row(tableEventFieldsIndexMap("utm_content")),
+            "utm_medium" -> row(tableEventFieldsIndexMap("utm_medium")),
+            "utm_source" -> row(tableEventFieldsIndexMap("utm_medium"))))
+        val eventRow = CommonFunctions.Events(row(tableEventFieldsIndexMap("url")).toString,row(tableEventFieldsIndexMap("user_id")).toString,row(tableEventFieldsIndexMap("event")).toString,
+            row(tableEventFieldsIndexMap("time")).toString,row(tableEventFieldsIndexMap("title")).toString,row(tableEventFieldsIndexMap("category")).toString,
+            row(tableEventFieldsIndexMap("author")).toString,row(tableEventFieldsIndexMap("screen_height")).toString,row(tableEventFieldsIndexMap("screen_width")).toString,
+            row(tableEventFieldsIndexMap("from_url")).toString,row(tableEventFieldsIndexMap("event_destination")).toString,row(tableEventFieldsIndexMap("screen_location")).toString,
+            row(tableEventFieldsIndexMap("search_engine")).toString,row(tableEventFieldsIndexMap("mp_keyword")).toString,row(tableEventFieldsIndexMap("mp_lib")).toString,
+            row(tableEventFieldsIndexMap("lib_version")).toString,user_data,referrer_data,utm_data)
+        return eventRow;
+    }
+    
     def updateEventsData(eventData: DataFrame,keySpace:String,table:String):Unit = {
-        val events = eventData.select("properties.url","properties.distinct_id","event","properties.time",
-            "properties.$browser","properties.$browser_version","properties.$region","properties.$city",
-            "properties.mp_country_code","properties.$os","properties.device","properties.$device","properties.title",
-            "properties.category","properties.author","properties.$screen_height","properties.$screen_width",
-            "properties.from","properties.which","properties.where","properties.$initial_referrer",
-            "properties.$initial_referring_domain","properties.$referrer","properties.$search_engine",
-            "properties.mp_keyword","properties.$mp_lib","properties.$lib_version","properties.$referring_domain",
-            "properties.utm_campaign","properties.utm_content","properties.utm_medium",	"properties.utm_source")
-        events.map {case(x:Row) => (x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9),x(10),x(11),x(12),x(13),x(14),
-            x(15),x(16),x(17),x(18),x(19),x(20),x(21),x(22),x(23),x(24),x(25),x(26),x(27),x(28),x(29),x(30),x(31)) }
-            .saveToCassandra(keySpace, table, SomeColumns("url","user_id","event","time","browser","browser_version",
-            "region","city","country_code","os", "device","device_type","title","category","author","screen_height",
-            "screen_width","from_url","event_destination","screen_location","initial_referrer","initial_referring_domain",
-            "referrer","search_engine","mp_keyword","mp_lib","lib_version","referring_domain","utm_campaign","utm_content",
-            "utm_medium","utm_source"))
+       
+        val events = eventData.select(jsonFields(0),jsonFields(1),jsonFields(2),jsonFields(3),jsonFields(4),jsonFields(5),
+            jsonFields(6),jsonFields(7),jsonFields(8),jsonFields(9),jsonFields(10),jsonFields(11),jsonFields(12),
+            jsonFields(13),jsonFields(14),jsonFields(15),jsonFields(16),jsonFields(17),jsonFields(18),jsonFields(19),
+            jsonFields(20),jsonFields(21),jsonFields(22),jsonFields(23),jsonFields(24),jsonFields(25),jsonFields(26),
+            jsonFields(27),jsonFields(28),jsonFields(29),jsonFields(30),jsonFields(31))
+        events.map(eventMapper).saveToCassandra(keySpace, table)
     }
 
     def updateUsersData(sparkContext: SparkContext,keySpace:String,table:String):Unit = {
         val userTable = sparkContext.cassandraTable[CommonFunctions.Users](keySpace,"events").select("user_id","browser",
             "browser_version","region", "city","country_code","os","device")
-        userTable.map {case(x:CassandraRow) => (x.getString("user_id"),x.getString("browser"),x.getString("browser_version"),
-            x.getString("region"),x.getString("city"),x.getString("country_code"),x.getString("os"),x.getString("device")) }
-            .saveToCassandra(keySpace, table, SomeColumns("user_id","browser","browser_version","region", "city",
+        userTable.saveToCassandra(keySpace, table, SomeColumns("user_id","browser","browser_version","region", "city",
             "country_code","os","device"))
 
     }
@@ -45,9 +66,7 @@ object UpdateCassandraData {
     def updatePageData(sparkContext: SparkContext,keySpace:String,table:String):Unit = {
         val pageTable = sparkContext.cassandraTable[CommonFunctions.Pages](keySpace,"events").select("url","title","category",
             "author","screen_height","screen_width")
-        pageTable.map {case(x:CassandraRow) => (x.getString("url"),x.getString("title"),x.getString("category"),
-            x.getString("author"),x.getString("screen_height"),x.getString("screen_width")) }.saveToCassandra(keySpace, table,
-            SomeColumns("url","title","category","author","screen_height","screen_width"))
+        pageTable.saveToCassandra(keySpace, table, SomeColumns("url","title","category","author","screen_height","screen_width"))
     }
 
 

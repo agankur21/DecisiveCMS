@@ -1,9 +1,21 @@
 package com.scoopwhoop.dcms
 import org.joda.time.{Days, DateTime}
+import com.datastax.spark.connector.UDTValue
 
 import scala.io.Source
 
 object CommonFunctions {
+    
+    case class Users(user_id:String,browser : String,browser_version:String,region:String,city:String,country_code:String,
+                     os: String,device:String)
+
+    case class Pages(url:String,title:String,category:String,author:String,screen_height:String, screen_width:String)
+
+    case class Events(url:String,user_id:String,event:String,time:String,title:String,category:String,author:String,
+                 screen_height:String,screen_width:String,from_url:String,event_destination:String,screen_location:String,
+                 search_engine:String,mp_keyword:String,mp_lib:String,lib_version:String,user_data:UDTValue,
+                 referrer_data:UDTValue,utm_data:UDTValue)
+    
     def getDayWeek(timestamp: Long): String = {
         val date_time = new DateTime(timestamp);
         val day = date_time.dayOfWeek().getAsText;
@@ -57,9 +69,8 @@ object CommonFunctions {
         
     }
     
-    case class Users(user_id:String,browser : String,browser_version:String,region:String,city:String,country_code:String,
-                     os: String,device:String)
-    
-    case class Pages(url:String,title:String,category:String,author:String,screen_height:String, screen_width:String)
 
+    
+    
+    
 }
