@@ -11,14 +11,24 @@ class UpdateCassandraData extends Serializable  {
     val eventFields = CommonFunctions.readResourceFile("event_fields")
     val jsonFields = eventFields.map(x =>x.split(",")(0))
     val tableEventFieldsIndexMap  = eventFields.map(x =>x.split(",")(1)).zipWithIndex.toMap
-    
+
+    case class Users(user_id:String,browser : String,browser_version:String,region:String,city:String,country_code:String,
+                     os: String,device:String) extends Serializable
+
+    case class Pages(url:String,title:String,category:String,author:String,screen_height:String, screen_width:String) extends Serializable
+
+    case class Events(url:String,user_id:String,event:String,time:String,title:String,category:String,author:String,
+                      screen_height:String,screen_width:String,from_url:String,event_destination:String,screen_location:String,
+                      search_engine:String,mp_keyword:String,mp_lib:String,lib_version:String,user_data:UDTValue,
+                      referrer_data:UDTValue,utm_data:UDTValue) extends Serializable
+
+
     def getData(sparkContext: SparkContext, path: String): DataFrame = {
         val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)
         return  sqlContext.read.json(path)
     }
 
-
-    def eventMapper(row:Row): CommonFunctions.Events={
+    def eventMapper(row:Row):Events={
         val tableEventFieldsIndexMap_ = this.tableEventFieldsIndexMap
         val user_data = UDTValue.fromMap(Map("browser" -> row(tableEventFieldsIndexMap_("browser")).toString,
             "browser_version" -> row(tableEventFieldsIndexMap_("browser_version")).toString,
@@ -36,7 +46,7 @@ class UpdateCassandraData extends Serializable  {
             "utm_content" -> row(tableEventFieldsIndexMap_("utm_content")).toString,
             "utm_medium" -> row(tableEventFieldsIndexMap_("utm_medium")).toString,
             "utm_source" -> row(tableEventFieldsIndexMap_("utm_medium")).toString))
-        val eventRow = CommonFunctions.Events(row(tableEventFieldsIndexMap_("url")).toString,row(tableEventFieldsIndexMap_("user_id")).toString,row(tableEventFieldsIndexMap_("event")).toString,
+        val eventRow = Events(row(tableEventFieldsIndexMap_("url")).toString,row(tableEventFieldsIndexMap_("user_id")).toString,row(tableEventFieldsIndexMap_("event")).toString,
             row(tableEventFieldsIndexMap_("time")).toString,row(tableEventFieldsIndexMap_("title")).toString,row(tableEventFieldsIndexMap_("category")).toString,
             row(tableEventFieldsIndexMap_("author")).toString,row(tableEventFieldsIndexMap_("screen_height")).toString,row(tableEventFieldsIndexMap_("screen_width")).toString,
             row(tableEventFieldsIndexMap_("from_url")).toString,row(tableEventFieldsIndexMap_("event_destination")).toString,row(tableEventFieldsIndexMap_("screen_location")).toString,
@@ -44,6 +54,7 @@ class UpdateCassandraData extends Serializable  {
             row(tableEventFieldsIndexMap_("lib_version")).toString,user_data,referrer_data,utm_data)
         return eventRow;
     }
+
     
     def updateEventsData(eventData: DataFrame,keySpace:String,table:String):Unit = {
 
@@ -56,7 +67,7 @@ class UpdateCassandraData extends Serializable  {
     }
 
     def updateUsersData(sparkContext: SparkContext,keySpace:String,table:String):Unit = {
-        val userTable = sparkContext.cassandraTable[CommonFunctions.Users](keySpace,"events").select("user_id","browser",
+        val userTable = sparkContext.cassandraTable[Users](keySpace,"events").select("user_id","browser",
             "browser_version","region", "city","country_code","os","device")
         userTable.saveToCassandra(keySpace, table, SomeColumns("user_id","browser","browser_version","region", "city",
             "country_code","os","device"))
@@ -64,9 +75,9 @@ class UpdateCassandraData extends Serializable  {
     }
 
     def updatePageData(sparkContext: SparkContext,keySpace:String,table:String):Unit = {
-        val pageTable = sparkContext.cassandraTable[CommonFunctions.Pages](keySpace,"events").select("url","title","category",
+        val pageTable = sparkContext.cassandraTable[Pages](keySpace,"events").select("url","title","category",
             "author","screen_height","screen_width")
         pageTable.saveToCassandra(keySpace, table, SomeColumns("url","title","category","author","screen_height","screen_width"))
     }
-    
+
 }
