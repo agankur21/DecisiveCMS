@@ -57,8 +57,16 @@ class UpdateCassandraData extends Serializable  {
 
     def userMapper(row:CassandraRow):Users = {
         val user_info: UDTValue = row.getUDTValue("user_data")
-        val user = Users(row.get[Any]("user_id"),user_info.get[Any]("browser"),user_info.get[Any]("browser_version"),user_info.get[Any]("region"),
-            user_info.get[Any]("city"),user_info.get[Any]("country_code"),user_info.get[Any]("os"),user_info.get[Any]("device"),user_info.get[Any]("device_type"))
+        val user_id:Any = row.get[Any]("user_id")
+        val browser:Any = if(user_info.isNullAt("browser")) null else user_info.get[Any]("browser")
+        val browser_version:Any = if(user_info.isNullAt("browser_version")) null else user_info.get[Any]("browser_version")
+        val region:Any = if(user_info.isNullAt("region")) null else user_info.get[Any]("region")
+        val city:Any = if(user_info.isNullAt("city")) null else user_info.get[Any]("city")
+        val country_code:Any = if(user_info.isNullAt("country_code")) null else user_info.get[Any]("country_code")
+        val os:Any = if(user_info.isNullAt("os")) null else user_info.get[Any]("os")
+        val device:Any = if(user_info.isNullAt("device")) null else user_info.get[Any]("device")
+        val device_type:Any = if(user_info.isNullAt("device_type")) null else user_info.get[Any]("device_type")
+        val user = Users(user_id,browser,browser_version,region,city,country_code,os,device,device_type)
         return user
     }
     
