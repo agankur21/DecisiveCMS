@@ -57,8 +57,8 @@ class UpdateCassandraData extends Serializable  {
 
     def userMapper(row:CassandraRow):Users = {
         val user_info: UDTValue = row.getUDTValue("user_data")
-        val user = Users(row.get("user_id"),user_info.get("browser"),user_info.get("browser_version"),user_info.get("region"),
-            user_info.get("city"),user_info.get("country_code"),user_info.get("os"),user_info.get("device"),user_info.get("device_type"))
+        val user = Users(row.get[Any]("user_id"),user_info.get[Any]("browser"),user_info.get[Any]("browser_version"),user_info.get[Any]("region"),
+            user_info.get[Any]("city"),user_info.get[Any]("country_code"),user_info.get[Any]("os"),user_info.get[Any]("device"),user_info.get[Any]("device_type"))
         return user
     }
     
