@@ -7,8 +7,7 @@ import com.datastax.spark.connector._
 import scala.io.Source
 import com.datastax.spark.connector.UDTValue
 
-object UpdateCassandraData  {
-
+class UpdateCassandraData extends Serializable  {
     val eventFields = CommonFunctions.readResourceFile("event_fields")
     val jsonFields = eventFields.map(x =>x.split(",")(0))
     val tableEventFieldsIndexMap  = eventFields.map(x =>x.split(",")(1)).zipWithIndex.toMap
@@ -18,39 +17,36 @@ object UpdateCassandraData  {
         return  sqlContext.read.json(path)
     }
 
-    
+
     def eventMapper(row:Row): CommonFunctions.Events={
-        val user_data = UDTValue.fromMap(Map("browser" -> row(tableEventFieldsIndexMap("browser")).toString,
-            "browser_version" -> row(tableEventFieldsIndexMap("browser_version")).toString,
-            "region" -> row(tableEventFieldsIndexMap("region")).toString,
-            "city" -> row(tableEventFieldsIndexMap("city")).toString,
-            "country_code" -> row(tableEventFieldsIndexMap("country_code")).toString,
-            "os" -> row(tableEventFieldsIndexMap("os")).toString,
-            "device" -> row(tableEventFieldsIndexMap("device")).toString,
-            "device_type" -> row(tableEventFieldsIndexMap("device_type")).toString))
-        println("Reached here1")
-        val referrer_data = UDTValue.fromMap(Map("initial_referrer" -> row(tableEventFieldsIndexMap("initial_referrer")).toString,
-            "initial_referring_domain" -> row(tableEventFieldsIndexMap("initial_referring_domain")).toString,
-            "referrer" -> row(tableEventFieldsIndexMap("referrer")).toString,
-            "referring_domain" -> row(tableEventFieldsIndexMap("referring_domain")).toString))
-        println("Reached here2")
-        val utm_data = UDTValue.fromMap(Map("utm_campaign" -> row(tableEventFieldsIndexMap("utm_campaign")).toString,
-            "utm_content" -> row(tableEventFieldsIndexMap("utm_content")).toString,
-            "utm_medium" -> row(tableEventFieldsIndexMap("utm_medium")).toString,
-            "utm_source" -> row(tableEventFieldsIndexMap("utm_medium")).toString))
-        println("Reached here3")
-        val eventRow = CommonFunctions.Events(row(tableEventFieldsIndexMap("url")).toString,row(tableEventFieldsIndexMap("user_id")).toString,row(tableEventFieldsIndexMap("event")).toString,
-            row(tableEventFieldsIndexMap("time")).toString,row(tableEventFieldsIndexMap("title")).toString,row(tableEventFieldsIndexMap("category")).toString,
-            row(tableEventFieldsIndexMap("author")).toString,row(tableEventFieldsIndexMap("screen_height")).toString,row(tableEventFieldsIndexMap("screen_width")).toString,
-            row(tableEventFieldsIndexMap("from_url")).toString,row(tableEventFieldsIndexMap("event_destination")).toString,row(tableEventFieldsIndexMap("screen_location")).toString,
-            row(tableEventFieldsIndexMap("search_engine")).toString,row(tableEventFieldsIndexMap("mp_keyword")).toString,row(tableEventFieldsIndexMap("mp_lib")).toString,
-            row(tableEventFieldsIndexMap("lib_version")).toString,user_data,referrer_data,utm_data)
-        println("Reached here4")
+        val tableEventFieldsIndexMap_ = this.tableEventFieldsIndexMap
+        val user_data = UDTValue.fromMap(Map("browser" -> row(tableEventFieldsIndexMap_("browser")).toString,
+            "browser_version" -> row(tableEventFieldsIndexMap_("browser_version")).toString,
+            "region" -> row(tableEventFieldsIndexMap_("region")).toString,
+            "city" -> row(tableEventFieldsIndexMap_("city")).toString,
+            "country_code" -> row(tableEventFieldsIndexMap_("country_code")).toString,
+            "os" -> row(tableEventFieldsIndexMap_("os")).toString,
+            "device" -> row(tableEventFieldsIndexMap_("device")).toString,
+            "device_type" -> row(tableEventFieldsIndexMap_("device_type")).toString))
+        val referrer_data = UDTValue.fromMap(Map("initial_referrer" -> row(tableEventFieldsIndexMap_("initial_referrer")).toString,
+            "initial_referring_domain" -> row(tableEventFieldsIndexMap_("initial_referring_domain")).toString,
+            "referrer" -> row(tableEventFieldsIndexMap_("referrer")).toString,
+            "referring_domain" -> row(tableEventFieldsIndexMap_("referring_domain")).toString))
+        val utm_data = UDTValue.fromMap(Map("utm_campaign" -> row(tableEventFieldsIndexMap_("utm_campaign")).toString,
+            "utm_content" -> row(tableEventFieldsIndexMap_("utm_content")).toString,
+            "utm_medium" -> row(tableEventFieldsIndexMap_("utm_medium")).toString,
+            "utm_source" -> row(tableEventFieldsIndexMap_("utm_medium")).toString))
+        val eventRow = CommonFunctions.Events(row(tableEventFieldsIndexMap_("url")).toString,row(tableEventFieldsIndexMap_("user_id")).toString,row(tableEventFieldsIndexMap_("event")).toString,
+            row(tableEventFieldsIndexMap_("time")).toString,row(tableEventFieldsIndexMap_("title")).toString,row(tableEventFieldsIndexMap_("category")).toString,
+            row(tableEventFieldsIndexMap_("author")).toString,row(tableEventFieldsIndexMap_("screen_height")).toString,row(tableEventFieldsIndexMap_("screen_width")).toString,
+            row(tableEventFieldsIndexMap_("from_url")).toString,row(tableEventFieldsIndexMap_("event_destination")).toString,row(tableEventFieldsIndexMap_("screen_location")).toString,
+            row(tableEventFieldsIndexMap_("search_engine")).toString,row(tableEventFieldsIndexMap_("mp_keyword")).toString,row(tableEventFieldsIndexMap("mp_lib")).toString,
+            row(tableEventFieldsIndexMap_("lib_version")).toString,user_data,referrer_data,utm_data)
         return eventRow;
     }
     
     def updateEventsData(eventData: DataFrame,keySpace:String,table:String):Unit = {
-       
+
         val events = eventData.select(jsonFields(0),jsonFields(1),jsonFields(2),jsonFields(3),jsonFields(4),jsonFields(5),
             jsonFields(6),jsonFields(7),jsonFields(8),jsonFields(9),jsonFields(10),jsonFields(11),jsonFields(12),
             jsonFields(13),jsonFields(14),jsonFields(15),jsonFields(16),jsonFields(17),jsonFields(18),jsonFields(19),
@@ -72,6 +68,5 @@ object UpdateCassandraData  {
             "author","screen_height","screen_width")
         pageTable.saveToCassandra(keySpace, table, SomeColumns("url","title","category","author","screen_height","screen_width"))
     }
-
-
+    
 }

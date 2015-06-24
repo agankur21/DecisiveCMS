@@ -1,10 +1,12 @@
 package com.scoopwhoop.dcms
+
+import org.apache.spark.sql.Row
 import org.joda.time.{Days, DateTime}
 import com.datastax.spark.connector.UDTValue
 
 import scala.io.Source
 
-object CommonFunctions {
+object CommonFunctions extends Serializable{
     
     case class Users(user_id:String,browser : String,browser_version:String,region:String,city:String,country_code:String,
                      os: String,device:String)
@@ -68,9 +70,5 @@ object CommonFunctions {
         lines.toList
         
     }
-    
 
-    
-    
-    
 }

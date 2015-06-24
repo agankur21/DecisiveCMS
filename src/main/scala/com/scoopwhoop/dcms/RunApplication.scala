@@ -10,10 +10,11 @@ object RunApplication {
         val conf = new SparkConf(true).set("spark.cassandra.connection.host", "10.2.3.10")
             .setAppName("RunApplication")
         val sparkContext = new SparkContext(conf)
-        val eventsData = UpdateCassandraData.getData(sparkContext,"/home/cassandra/ScoopWhoop_2015-06-01")
-        UpdateCassandraData.updateEventsData(eventsData,"dcms","events")
-        UpdateCassandraData.updateUsersData(sparkContext,"dcms","users")
-        UpdateCassandraData.updatePageData(sparkContext,"dcms","pages")
+        val updateData = new UpdateCassandraData()
+        val eventsData = updateData.getData(sparkContext,"/home/cassandra/ScoopWhoop_2015-06-01")
+        updateData.updateEventsData(eventsData,"dcms","events")
+        updateData.updateUsersData(sparkContext,"dcms","users")
+        updateData.updatePageData(sparkContext,"dcms","pages")
         sparkContext.stop()
     }
 }
