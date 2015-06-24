@@ -13,7 +13,7 @@ class UpdateCassandraData extends Serializable  {
     val tableEventFieldsIndexMap  = eventFields.map(x =>x.split(",")(1)).zipWithIndex.toMap
 
     case class Users(user_id:Any,browser : Any,browser_version:Any,region:Any,city:Any,country_code:Any,
-                     os: Any,device:Any) extends Serializable
+                     os: Any,device:Any,device_type:Any) extends Serializable
 
     case class Pages(url:Any,title:Any,category:Any,author:Any,screen_height:Any, screen_width:Any) extends Serializable
 
@@ -55,6 +55,12 @@ class UpdateCassandraData extends Serializable  {
         return eventRow;
     }
 
+    def userMapper(row:CassandraRow):Users = {
+        val user_info: UDTValue = row.getUDTValue("user_data")
+        val user = Users(row.get("user_id"),user_info.get("browser"),user_info.get("browser_version"),user_info.get("region"),
+            user_info.get("city"),user_info.get("country_code"),user_info.get("os"),user_info.get("device"),user_info.get("device_type"))
+        return user
+    }
     
     def updateEventsData(eventData: DataFrame,keySpace:String,table:String):Unit = {
         val events = eventData.select(jsonFields(0),jsonFields(1),jsonFields(2),jsonFields(3),jsonFields(4),jsonFields(5),
@@ -69,10 +75,9 @@ class UpdateCassandraData extends Serializable  {
 
 
     def updateUsersData(sparkContext: SparkContext,keySpace:String,table:String):Unit = {
-        val userTable = sparkContext.cassandraTable[Users](keySpace,"events").select("user_id","browser",
-            "browser_version","region", "city","country_code","os","device")
-        userTable.saveToCassandra(keySpace, table, SomeColumns("user_id","browser","browser_version","region", "city",
-            "country_code","os","device"))
+        val userTable = sparkContext.cassandraTable(keySpace,"events").select("user_id","user_data")
+        userTable.map(userMapper).saveToCassandra(keySpace, table, SomeColumns("user_id","browser","browser_version","region", "city",
+            "country_code","os","device","device_type"))
 
     }
 
