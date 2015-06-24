@@ -57,17 +57,15 @@ class UpdateCassandraData extends Serializable  {
 
     def userMapper(row:CassandraRow):Users = {
         val user_info: UDTValue = row.getUDTValue("user_data")
-        val user_id:Any = row.get[Any]("user_id")
-        val browser:Any = if(user_info.isNullAt("browser")) null else user_info.get[Any]("browser")
-        val browser_version:Any = if(user_info.isNullAt("browser_version")) null else user_info.get[Any]("browser_version")
-        val region:Any = if(user_info.isNullAt("region")) null else user_info.get[Any]("region")
-        val city:Any = if(user_info.isNullAt("city")) null else user_info.get[Any]("city")
-        val country_code:Any = if(user_info.isNullAt("country_code")) null else user_info.get[Any]("country_code")
-        val os:Any = if(user_info.isNullAt("os")) null else user_info.get[Any]("os")
-        val device:Any = if(user_info.isNullAt("device")) null else user_info.get[Any]("device")
-        val device_type:Any = if(user_info.isNullAt("device_type")) null else user_info.get[Any]("device_type")
-        val user = Users(user_id,browser,browser_version,region,city,country_code,os,device,device_type)
-        return user
+        val user = Users(row.get[Any]("user_id"),if(user_info.isNullAt("browser")) null else user_info.get[Any]("browser"),
+                    if(user_info.isNullAt("browser_version")) null else user_info.get[Any]("browser_version"),
+                    if(user_info.isNullAt("region")) null else user_info.get[Any]("region"),
+                    if(user_info.isNullAt("city")) null else user_info.get[Any]("city"),
+                    if(user_info.isNullAt("country_code")) null else user_info.get[Any]("country_code"),
+                    if(user_info.isNullAt("os")) null else user_info.get[Any]("os"),
+                    if(user_info.isNullAt("device")) null else user_info.get[Any]("device"),
+                    if(user_info.isNullAt("device_type")) null else user_info.get[Any]("device_type"))
+        user
     }
     
     def updateEventsData(eventData: DataFrame,keySpace:String,table:String):Unit = {
@@ -81,12 +79,10 @@ class UpdateCassandraData extends Serializable  {
             "mp_keyword","mp_lib","lib_version","user_data","referrer_data","utm_data"))
     }
 
-
     def updateUsersData(sparkContext: SparkContext,keySpace:String,table:String):Unit = {
         val userTable = sparkContext.cassandraTable(keySpace,"events").select("user_id","user_data")
         userTable.map(userMapper).saveToCassandra(keySpace, table, SomeColumns("user_id","browser","browser_version","region", "city",
             "country_code","os","device","device_type"))
-
     }
 
     def updatePageData(sparkContext: SparkContext,keySpace:String,table:String):Unit = {
