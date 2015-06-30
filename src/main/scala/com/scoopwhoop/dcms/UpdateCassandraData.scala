@@ -19,7 +19,7 @@ class UpdateCassandraData extends Serializable  {
                       referrer_data:UDTValue,utm_data:UDTValue) extends Serializable
 
     case class GoogleData(url:String,start_date:String,end_date:String,page_views:Int,unique_page_views:Int,
-                          avg_time_per_page:Long,entrances:Int,bounce_rate:Double,exit:Double,page_value:Double) extends Serializable
+                          avg_time_per_page:Double,entrances:Int,bounce_rate:Double,exit:Double,page_value:Double) extends Serializable
 
     
     def getEventsData(sparkContext: SparkContext, path: String): DataFrame = {
@@ -35,8 +35,11 @@ class UpdateCassandraData extends Serializable  {
         val inputFile = sparkContext.textFile(path)
         val startEndDate = inputFile.zipWithIndex.filter(_._2 == 3).map(_._1.replaceAll("#","").trim.split("-")).collect
         val Array(startDate,endDate) = startEndDate(0).map(CommonFunctions.getDateString)
-        val output = inputFile.zipWithIndex.filter(_._2 > 6).map(_._1).map(_.split(",")).map(p => GoogleData("http://www.scoopwhoop.com" +p(0),
-            startDate,endDate,p(1).toInt,p(2).toInt,p(3).toLong,p(4).toInt,p(5).toDouble,p(6).toDouble,p(7).toDouble)).toDF()
+        val output = inputFile.zipWithIndex.filter(_._2 > 6).map(_._1).map(CommonFunctions.cleanString)
+            .map(_.split(",")).map(p => GoogleData("http://www.scoopwhoop.com" +p(0),
+            startDate,endDate,p(1).toInt,p(2).toInt,CommonFunctions.getTimeInMinutes(p(3)),p(4).toInt,
+            CommonFunctions.getNumberFromPercentage(p(5)),CommonFunctions.getNumberFromPercentage(p(6)),
+            CommonFunctions.getNumberFromCurrency(p(7)))).toDF()
         return output;
     }
 
@@ -92,8 +95,7 @@ class UpdateCassandraData extends Serializable  {
     def updateUsersData(eventData: DataFrame,keySpace:String,table:String):Unit = {
         Logger.logInfo(s"Updating the Cassandra Table $keySpace.$table............. ")
         val users = eventData.select("properties.distinct_id","properties.$browser","properties.$browser_version",
-            "properties.$region","properties.$city","properties.mp_country_code","properties.$os",
-            "properties.device,properties.$device")
+            "properties.$region","properties.$city","properties.mp_country_code","properties.$os", "properties.device","properties.$device")
         users.map {case(x:Row) => (x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8)) }.saveToCassandra(keySpace, table,
             SomeColumns("user_id","browser","browser_version","region","city","country_code","os","device","device_type"))
         Logger.logInfo(s"Cassandra Table $keySpace.$table Updated !!")

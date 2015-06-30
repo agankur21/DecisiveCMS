@@ -71,12 +71,12 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         end_date                    text,
         page_views                  int,
         unique_page_views           int,
-        avg_time_per_page           bigint,
+        avg_time_per_page           double,
         entrances                   int,
         bounce_rate                 double,
         exit                        double,
-        page_value                  double
-        PRIMARY KEY (url,start_date,end_date))
+        page_value                  double,
+        PRIMARY KEY (url,start_date,end_date)
     );
 
         

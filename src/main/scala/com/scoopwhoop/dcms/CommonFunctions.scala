@@ -1,5 +1,7 @@
 package com.scoopwhoop.dcms
 
+import java.text.NumberFormat
+
 import org.apache.spark.sql.Row
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.{Days, DateTime}
@@ -68,5 +70,27 @@ object CommonFunctions extends Serializable {
         val dateTime  = DateTime.parse(input, DateTimeFormat.forPattern(pattern));
         dateTime.toString(DateTimeFormat.forPattern("yyyy-MM-dd"))
     }
+    
+    def cleanString(input:String):String = {
+        val pattern = """\"(\d+),(\d+)\"""".r
+        return pattern.replaceAllIn (input,m => m.group(1).toString + m.group(2).toString )
+    }
+    
+    def getNumberFromPercentage(input:String):Double = {
+       val format = NumberFormat.getPercentInstance();
+       val number = format.parse(input) ;
+       number.doubleValue() ;
+    }
 
+    def getNumberFromCurrency(input:String):Double = {
+        val format = NumberFormat.getCurrencyInstance();
+        val number = format.parse(input) ;
+        number.doubleValue() ;
+    }
+    
+    def getTimeInMinutes(input:String) :Double = {
+        val timeArray = input.split(":")
+        return ((timeArray(0).toDouble*60) + timeArray(1).toDouble + (timeArray(2).toDouble/60))
+        
+    }
 }
