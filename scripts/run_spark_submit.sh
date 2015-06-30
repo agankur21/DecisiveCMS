@@ -14,7 +14,7 @@ SPARK_HOME="/usr/local/spark";
 JOB_CLASS="com.scoopwhoop.dcms.RunApplication";
 JOB_JAR="${PROJECT_HOME}/target/scala-2.10/dcms-assembly.jar"
 JOB_DEP_JARS="${PROJECT_HOME}/lib/joda-time-2.7.jar,${PROJECT_HOME}/lib/joda-convert-1.7.jar"
-MASTER="local[4]"
+MASTER="spark://10.2.3.10:7077"
 ##############################################################################
 
 
@@ -28,7 +28,7 @@ function MAIN()
    loggerInfo "***      Script: $0   START  ***";
   
    loggerInfo "Running Job -  ${JOB_CLASS} "
-   ${SPARK_HOME}/bin/spark-submit --master ${MASTER} --class ${JOB_CLASS} --jars ${JOB_DEP_JARS} --num-executors 5 --executor-memory 2g --driver-memory 1g  ${JOB_JAR}  ;
+   ${SPARK_HOME}/bin/spark-submit --master ${MASTER} --class ${JOB_CLASS} --jars ${JOB_DEP_JARS} --num-executors 2 --executor-memory 2g --driver-memory 1g  ${JOB_JAR}  ;
    loggerInfo "***      Script: $0    END   ***";
 }
 ##############################################################################

@@ -70,10 +70,12 @@ class UpdateCassandraData extends Serializable  {
     
     
     def updateGoogleAnalyticsData(gaData:DataFrame,keySpace:String,table:String):Unit= {
+        Logger.logInfo(s"Updating the Cassandra Table $keySpace.$table............. ")
         gaData.write
             .format("org.apache.spark.sql.cassandra")
             .options(Map( "table" -> table, "keyspace" -> keySpace ))
             .save()
+        Logger.logInfo(s"Cassandra Table $keySpace.$table Updated !!")
     }
     
     def updateEventsData(eventData: DataFrame,keySpace:String,table:String):Unit = {
@@ -88,18 +90,22 @@ class UpdateCassandraData extends Serializable  {
     }
 
     def updateUsersData(eventData: DataFrame,keySpace:String,table:String):Unit = {
+        Logger.logInfo(s"Updating the Cassandra Table $keySpace.$table............. ")
         val users = eventData.select("properties.distinct_id","properties.$browser","properties.$browser_version",
             "properties.$region","properties.$city","properties.mp_country_code","properties.$os",
             "properties.device,properties.$device")
         users.map {case(x:Row) => (x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8)) }.saveToCassandra(keySpace, table,
             SomeColumns("user_id","browser","browser_version","region","city","country_code","os","device","device_type"))
+        Logger.logInfo(s"Cassandra Table $keySpace.$table Updated !!")
     }
 
     def updatePageData(eventData: DataFrame,keySpace:String,table:String):Unit = {
+        Logger.logInfo(s"Updating the Cassandra Table $keySpace.$table............. ")
         val pages = eventData.select("properties.url","properties.title","properties.category","properties.author",
             "properties.$screen_height","properties.$screen_width")
         pages.map {case(x:Row) => (x(0),x(1),x(2),x(3),x(4),x(5)) }.saveToCassandra(keySpace, table, 
             SomeColumns("url","title","category","author", "screen_height","screen_width"))
+        Logger.logInfo(s"Cassandra Table $keySpace.$table Updated !!")
     }
 
 
