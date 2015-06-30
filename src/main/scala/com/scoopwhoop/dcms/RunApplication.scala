@@ -11,10 +11,12 @@ object RunApplication {
             .setAppName("RunApplication")
         val sparkContext = new SparkContext(conf)
         val updateData = new UpdateCassandraData()
-        val eventsData = updateData.getData(sparkContext,"/home/cassandra/ScoopWhoop_2015-06-01")
-        updateData.updateEventsData(eventsData,"dcms","events")
-        updateData.updateUsersData(sparkContext,"dcms","users")
-        updateData.updatePageData(sparkContext,"dcms","pages")
+        val eventsData = updateData.getEventsData(sparkContext,"/home/cassandra/ScoopWhoop_2015-06-01")
+        val googleAnalyticsData =updateData.getGoogleAnalyticsData(sparkContext,"/home/cassandra/google_data")
+        //updateData.updateEventsData(eventsData,"dcms","events")
+        updateData.updateUsersData(eventsData,"dcms","users")
+        updateData.updatePageData(eventsData,"dcms","pages")
+        updateData.updateGoogleAnalyticsData(googleAnalyticsData,"dcms","google_analytics_data")
         sparkContext.stop()
     }
 }

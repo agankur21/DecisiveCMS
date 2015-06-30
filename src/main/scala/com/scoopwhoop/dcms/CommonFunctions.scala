@@ -1,9 +1,10 @@
 package com.scoopwhoop.dcms
 
 import org.apache.spark.sql.Row
+import org.joda.time.format.DateTimeFormat
 import org.joda.time.{Days, DateTime}
 import com.datastax.spark.connector.UDTValue
-import scala.annotation.serializable
+
 import scala.io.Source
 
 object CommonFunctions extends Serializable {
@@ -60,6 +61,12 @@ object CommonFunctions extends Serializable {
         val lines = Source.fromURL(getClass.getResource("/"+fileName)).getLines()
         lines.toList
         
+    }
+    
+    def getDateString(input:String): String ={
+        val pattern = "yyyyMMdd";
+        val dateTime  = DateTime.parse(input, DateTimeFormat.forPattern(pattern));
+        dateTime.toString(DateTimeFormat.forPattern("yyyy-MM-dd"))
     }
 
 }

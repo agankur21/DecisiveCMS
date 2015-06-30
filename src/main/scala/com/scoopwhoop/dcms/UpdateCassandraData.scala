@@ -1,32 +1,45 @@
 package com.scoopwhoop.dcms
 import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.sql.{SQLContext,DataFrame,Row}
-import org.joda.time.DateTime
 import org.apache.spark.rdd.RDD
 import com.datastax.spark.connector._
 import scala.io.Source
 import com.datastax.spark.connector.UDTValue
+import org.joda.time.format.{DateTimeFormat}
+import org.joda.time.DateTime
 
 class UpdateCassandraData extends Serializable  {
     val eventFields = CommonFunctions.readResourceFile("event_fields")
     val jsonFields = eventFields.map(x =>x.split(",")(0))
     val tableEventFieldsIndexMap  = eventFields.map(x =>x.split(",")(1)).zipWithIndex.toMap
 
-    case class Users(user_id:Any,browser : Any,browser_version:Any,region:Any,city:Any,country_code:Any,
-                     os: Any,device:Any,device_type:Any) extends Serializable
-
-    case class Pages(url:Any,title:Any,category:Any,author:Any,screen_height:Any, screen_width:Any) extends Serializable
-
     case class Events(url:Any,user_id:Any,event:Any,time:Any,title:Any,category:Any,author:Any,
                       screen_height:Any,screen_width:Any,from_url:Any,event_destination:Any,screen_location:Any,
                       search_engine:Any,mp_keyword:Any,mp_lib:Any,lib_version:Any,user_data:UDTValue,
                       referrer_data:UDTValue,utm_data:UDTValue) extends Serializable
 
+    case class GoogleData(url:String,start_date:String,end_date:String,page_views:Int,unique_page_views:Int,
+                          avg_time_per_page:Long,entrances:Int,bounce_rate:Double,exit:Double,page_value:Double) extends Serializable
 
-    def getData(sparkContext: SparkContext, path: String): DataFrame = {
+    
+    def getEventsData(sparkContext: SparkContext, path: String): DataFrame = {
         val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)
         return  sqlContext.read.json(path)
     }
+    
+    def getGoogleAnalyticsData(sparkContext: SparkContext, path: String):DataFrame = {
+        val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)
+        import sqlContext.implicits._
+        case class GA(url: String, start_date: String,end_date:String,page_views:Int,unique_page_views:Int,
+                      avg_time_per_page:Long,entrances:Int,bounce_rate:Double,exit:Double,page_value:Double)
+        val inputFile = sparkContext.textFile(path)
+        val startEndDate = inputFile.zipWithIndex.filter(_._2 == 3).map(_._1.replaceAll("#","").trim.split("-")).collect
+        val Array(startDate,endDate) = startEndDate(0).map(CommonFunctions.getDateString)
+        val output = inputFile.zipWithIndex.filter(_._2 > 6).map(_._1).map(_.split(",")).map(p => GoogleData("http://www.scoopwhoop.com" +p(0),
+            startDate,endDate,p(1).toInt,p(2).toInt,p(3).toLong,p(4).toInt,p(5).toDouble,p(6).toDouble,p(7).toDouble)).toDF()
+        return output;
+    }
+
   
     def eventMapper(row:Row):Events={
         val tableEventFieldsIndexMap_ = this.tableEventFieldsIndexMap
@@ -54,18 +67,13 @@ class UpdateCassandraData extends Serializable  {
             row(tableEventFieldsIndexMap_("lib_version")),user_data,referrer_data,utm_data)
         return eventRow;
     }
-
-    def userMapper(row:CassandraRow):Users = {
-        val user_info: UDTValue = row.getUDTValue("user_data")
-        val user = Users(row.get[Any]("user_id"),if(user_info.isNullAt("browser")) null else user_info.get[Any]("browser"),
-                    if(user_info.isNullAt("browser_version")) null else user_info.get[Any]("browser_version"),
-                    if(user_info.isNullAt("region")) null else user_info.get[Any]("region"),
-                    if(user_info.isNullAt("city")) null else user_info.get[Any]("city"),
-                    if(user_info.isNullAt("country_code")) null else user_info.get[Any]("country_code"),
-                    if(user_info.isNullAt("os")) null else user_info.get[Any]("os"),
-                    if(user_info.isNullAt("device")) null else user_info.get[Any]("device"),
-                    if(user_info.isNullAt("device_type")) null else user_info.get[Any]("device_type"))
-        user
+    
+    
+    def updateGoogleAnalyticsData(gaData:DataFrame,keySpace:String,table:String):Unit= {
+        gaData.write
+            .format("org.apache.spark.sql.cassandra")
+            .options(Map( "table" -> table, "keyspace" -> keySpace ))
+            .save()
     }
     
     def updateEventsData(eventData: DataFrame,keySpace:String,table:String):Unit = {
@@ -79,16 +87,20 @@ class UpdateCassandraData extends Serializable  {
             "mp_keyword","mp_lib","lib_version","user_data","referrer_data","utm_data"))
     }
 
-    def updateUsersData(sparkContext: SparkContext,keySpace:String,table:String):Unit = {
-        val userTable = sparkContext.cassandraTable(keySpace,"events").select("user_id","user_data")
-        userTable.map(userMapper).saveToCassandra(keySpace, table, SomeColumns("user_id","browser","browser_version","region", "city",
-            "country_code","os","device","device_type"))
+    def updateUsersData(eventData: DataFrame,keySpace:String,table:String):Unit = {
+        val users = eventData.select("properties.distinct_id","properties.$browser","properties.$browser_version",
+            "properties.$region","properties.$city","properties.mp_country_code","properties.$os",
+            "properties.device,properties.$device")
+        users.map {case(x:Row) => (x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8)) }.saveToCassandra(keySpace, table,
+            SomeColumns("user_id","browser","browser_version","region","city","country_code","os","device","device_type"))
     }
 
-    def updatePageData(sparkContext: SparkContext,keySpace:String,table:String):Unit = {
-        val pageTable = sparkContext.cassandraTable[Pages](keySpace,"events").select("url","title","category",
-            "author","screen_height","screen_width")
-        pageTable.saveToCassandra(keySpace, table, SomeColumns("url","title","category","author","screen_height","screen_width"))
+    def updatePageData(eventData: DataFrame,keySpace:String,table:String):Unit = {
+        val pages = eventData.select("properties.url","properties.title","properties.category","properties.author",
+            "properties.$screen_height","properties.$screen_width")
+        pages.map {case(x:Row) => (x(0),x(1),x(2),x(3),x(4),x(5)) }.saveToCassandra(keySpace, table, 
+            SomeColumns("url","title","category","author", "screen_height","screen_width"))
     }
+
 
 }

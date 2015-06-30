@@ -65,6 +65,21 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         device_type                 text
     );
 
+    CREATE TABLE IF NOT EXISTS google_analytics_data(
+        url                         text,
+        start_date                  text,
+        end_date                    text,
+        page_views                  int,
+        unique_page_views           int,
+        avg_time_per_page           bigint,
+        entrances                   int,
+        bounce_rate                 double,
+        exit                        double,
+        page_value                  double
+        PRIMARY KEY (url,start_date,end_date))
+    );
+
+        
     CREATE TABLE IF NOT EXISTS events(
         url                         text,
         user_id                     text,
