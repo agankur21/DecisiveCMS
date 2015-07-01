@@ -20,7 +20,6 @@ class UpdateCassandraData extends Serializable  {
 
     case class GoogleData(url:String,start_date:String,end_date:String,page_views:Int,unique_page_views:Int,
                           avg_time_per_page:Double,entrances:Int,bounce_rate:Double,exit:Double,page_value:Double) extends Serializable
-
     
     def getEventsData(sparkContext: SparkContext, path: String): DataFrame = {
         val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)
@@ -30,13 +29,12 @@ class UpdateCassandraData extends Serializable  {
     def getGoogleAnalyticsData(sparkContext: SparkContext, path: String):DataFrame = {
         val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)
         import sqlContext.implicits._
-        case class GA(url: String, start_date: String,end_date:String,page_views:Int,unique_page_views:Int,
-                      avg_time_per_page:Long,entrances:Int,bounce_rate:Double,exit:Double,page_value:Double)
         val inputFile = sparkContext.textFile(path)
         val startEndDate = inputFile.zipWithIndex.filter(_._2 == 3).map(_._1.replaceAll("#","").trim.split("-")).collect
         val Array(startDate,endDate) = startEndDate(0).map(CommonFunctions.getDateString)
-        val output = inputFile.zipWithIndex.filter(_._2 > 6).map(_._1).map(CommonFunctions.cleanString)
-            .map(_.split(",")).map(p => GoogleData("http://www.scoopwhoop.com" +p(0),
+        val output = inputFile.zipWithIndex.filter(_._2 > 6).map(_._1).filter(x => (x.startsWith("/") || x.startsWith("\"/")))
+            .map(CommonFunctions.cleanString)
+            .map(_.split(",")).map(p => GoogleData("http://www.scoopwhoop.com" +p(0).stripPrefix("\"").stripSuffix("\"").trim,
             startDate,endDate,p(1).toInt,p(2).toInt,CommonFunctions.getTimeInMinutes(p(3)),p(4).toInt,
             CommonFunctions.getNumberFromPercentage(p(5)),CommonFunctions.getNumberFromPercentage(p(6)),
             CommonFunctions.getNumberFromCurrency(p(7)))).toDF()
@@ -74,10 +72,9 @@ class UpdateCassandraData extends Serializable  {
     
     def updateGoogleAnalyticsData(gaData:DataFrame,keySpace:String,table:String):Unit= {
         Logger.logInfo(s"Updating the Cassandra Table $keySpace.$table............. ")
-        gaData.write
-            .format("org.apache.spark.sql.cassandra")
-            .options(Map( "table" -> table, "keyspace" -> keySpace ))
-            .save()
+        gaData.map {case(x:Row) => (x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9)) }.saveToCassandra(keySpace, table,
+            SomeColumns("url","start_date","end_date","page_views","unique_page_views","avg_time_per_page",
+                "entrances","bounce_rate","exit","page_value"))
         Logger.logInfo(s"Cassandra Table $keySpace.$table Updated !!")
     }
     
