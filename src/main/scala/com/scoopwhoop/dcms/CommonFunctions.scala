@@ -13,24 +13,37 @@ object CommonFunctions extends Serializable {
 
 
     def getDayWeek(timestamp: Long): String = {
-        val date_time = new DateTime(timestamp);
+        val date_time = new DateTime(timestamp*1000L);
         val day = date_time.dayOfWeek().getAsText;
         day
     }
+    
+    def getDate(timestamp:Long):String = {
+        val date_time = new DateTime(timestamp*1000L);
+        return date_time.toString(DateTimeFormat.forPattern("yyyy-MM-dd"))
+    }
+    
+    def isGreaterOrEqual(timestamp:Long,date:String):Boolean ={
+        return (getDate(timestamp) >= date)
+    }
+
+    def isLowerOrEqual(timestamp:Long,date:String):Boolean ={
+        return (getDate(timestamp) <= date)
+    }
 
     def getTimeSlot(timestamp: Long): Int = {
-        val date_time = new DateTime(timestamp);
+        val date_time = new DateTime(timestamp*1000L);
         val time_minutes = date_time.getMinuteOfDay;
         time_minutes / 2
     }
 
     def getDayHour(timestamp: Long): Int = {
-        val date_time = new DateTime(timestamp);
+        val date_time = new DateTime(timestamp*1000L);
         date_time.getHourOfDay
     }
 
     def getDayDiff(timestamp: Long): Int = {
-        return Days.daysBetween(new DateTime(timestamp), new DateTime()).getDays;
+        return Days.daysBetween(new DateTime(timestamp*1000L), new DateTime()).getDays;
     }
 
     def isInteger(text:String):Boolean = {
@@ -65,7 +78,7 @@ object CommonFunctions extends Serializable {
         
     }
     
-    def getDateString(input:String): String ={
+    def convertDateStringFormat(input:String): String ={
         val pattern = "yyyyMMdd";
         val dateTime  = DateTime.parse(input, DateTimeFormat.forPattern(pattern));
         dateTime.toString(DateTimeFormat.forPattern("yyyy-MM-dd"))
@@ -93,4 +106,6 @@ object CommonFunctions extends Serializable {
         return ((timeArray(0).toDouble*60) + timeArray(1).toDouble + (timeArray(2).toDouble/60))
         
     }
+    
+
 }

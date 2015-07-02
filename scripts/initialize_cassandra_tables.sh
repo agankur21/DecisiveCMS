@@ -39,31 +39,7 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         screen_height               text, 
         screen_width                text
     );
-    
-    CREATE TYPE IF NOT EXISTS utm(
-        utm_campaign                text,
-        utm_content                 text,
-        utm_medium                  text,
-        utm_source                  text,
-    );
-    
-    CREATE TYPE IF NOT EXISTS referrer(
-        initial_referrer            text,
-        initial_referring_domain    text,
-        referrer                    text,
-        referring_domain            text,
-    );
-    
-    CREATE TYPE IF NOT EXISTS user_info(
-        browser                     text,
-        browser_version             text,
-        region                      text,
-        city                        text,
-        country_code                text,
-        os                          text,
-        device                      text,
-        device_type                 text
-    );
+
 
     CREATE TABLE IF NOT EXISTS google_analytics_data(
         url                         text,
@@ -84,25 +60,30 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         url                         text,
         user_id                     text,
         event                       text,
-        time                        text,
-        title                       text,
+        time                        bigint,
         category                    text,
-        author                      text,
-        screen_height               text, 
-        screen_width                text,
         from_url                    text,
         event_destination           text,
         screen_location             text,
-        search_engine               text,  
-        mp_keyword                  text,
-        mp_lib                      text,
-        lib_version                 text,
-        user_data                   frozen <user_info>,
-        referrer_data               frozen <referrer>,
-        utm_data                    frozen <utm>,
-        PRIMARY KEY ((url,user_id,event),time))
+        referring_domain            text,
+        PRIMARY KEY ((url,user_id,event),time)
         WITH CLUSTERING ORDER BY (time DESC)
+    );
         
-
+    CREATE TABLE IF NOT EXISTS google_category_statistics(
+        category                    text,
+        start_date                  text,
+        end_date                    text,
+        desktop_views               int,
+        mobile_views                int,
+        clicks                      int,
+        shares                      int,
+        ga_page_views               int,
+        ga_unique_page_views        int,
+        ga_avg_time                 double,
+        ga_entrances                 int,
+        ga_bounce_rate              double,
+        PRIMARY KEY (category,start_date,end_date)
+    )
 
 "
