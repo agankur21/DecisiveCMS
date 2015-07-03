@@ -28,7 +28,7 @@ function MAIN()
    loggerInfo "***      Script: $0   START  ***";
   
    loggerInfo "Running Job -  ${JOB_CLASS} "
-   ${SPARK_HOME}/bin/spark-submit --master ${MASTER} --class ${JOB_CLASS} --jars ${JOB_DEP_JARS} --num-executors 2 --executor-memory 2g --driver-memory 1g  ${JOB_JAR}  ;
+   ${SPARK_HOME}/bin/spark-submit --master ${MASTER} --class ${JOB_CLASS} --jars ${JOB_DEP_JARS} --conf spark.shuffle.spill=false  --executor-memory 1g --driver-memory 5g ${JOB_JAR}  ;
    loggerInfo "***      Script: $0    END   ***";
 }
 ##############################################################################

@@ -67,8 +67,9 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         screen_location             text,
         referring_domain            text,
         PRIMARY KEY ((url,user_id,event),time)
+    )
         WITH CLUSTERING ORDER BY (time DESC)
-    );
+    ;
         
     CREATE TABLE IF NOT EXISTS google_category_statistics(
         category                    text,

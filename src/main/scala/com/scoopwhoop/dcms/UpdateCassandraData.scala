@@ -13,8 +13,6 @@ class UpdateCassandraData extends Serializable  {
     val jsonFields = eventFields.map(x =>x.split(",")(0))
     val tableEventFieldsIndexMap  = eventFields.map(x =>x.split(",")(1)).zipWithIndex.toMap
 
-    case class Events(url:String,user_id:String,event:String,time:Long,category:String,from_url:String,event_destination:String,screen_location:String,
-                      referring_domain:String) extends Serializable
 
     case class GoogleData(url:String,start_date:String,end_date:String,page_views:Int,unique_page_views:Int,
                           avg_time_per_page:Double,entrances:Int,bounce_rate:Double,exit:Double,page_value:Double) extends Serializable
@@ -61,7 +59,7 @@ class UpdateCassandraData extends Serializable  {
         Logger.logInfo(s"Updating the Cassandra Table $keySpace.$table............. ")
         val users = eventData.select("properties.distinct_id","properties.$browser","properties.$browser_version",
             "properties.$region","properties.$city","properties.mp_country_code","properties.$os", "properties.device","properties.$device")
-        users.map {case(x:Row) => (x(0),x(1),x(2),x(3).toString.toLong,x(4),x(5),x(6),x(7),x(8)) }.saveToCassandra(keySpace, table,
+        users.map {case(x:Row) => (x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8)) }.saveToCassandra(keySpace, table,
             SomeColumns("user_id","browser","browser_version","region","city","country_code","os","device","device_type"))
         Logger.logInfo(s"Cassandra Table $keySpace.$table Updated !!")
     }

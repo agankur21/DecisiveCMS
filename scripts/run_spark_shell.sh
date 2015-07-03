@@ -12,7 +12,7 @@ SPARK_HOME="/usr/local/spark";
 JOB_CLASS="com.scoopwhoop.dcms.RunApplication";
 JOB_JAR="${PROJECT_HOME}/target/scala-2.10/dcms-assembly.jar"
 JOB_DEP_JARS="${PROJECT_HOME}/lib/joda-time-2.7.jar,${PROJECT_HOME}/lib/joda-convert-1.7.jar"
-MASTER="local[2]"
+MASTER="spark://10.2.3.10:7077"
 ##############################################################################
 
 
@@ -26,7 +26,7 @@ function MAIN()
    loggerInfo "***      Script: $0   START  ***";
   
    loggerInfo "Running Spark shell with Jar : ${JOB_JAR} "
-   ${SPARK_HOME}/bin/spark-shell --master ${MASTER}  --jars ${JOB_JAR}  ;
+   ${SPARK_HOME}/bin/spark-shell --master ${MASTER}  --jars ${JOB_JAR}  --executor-memory 1g --driver-memory 5g --conf spark.cassandra.connection.host=10.2.3.10 ;
    loggerInfo "***      Script: $0    END   ***";
 }
 ##############################################################################
