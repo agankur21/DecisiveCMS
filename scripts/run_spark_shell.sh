@@ -6,7 +6,7 @@
 # Script to run Spark Scala job.
 #
 ##############################################################################
-export PROJECT_HOME=/mnt/git-repo/DecisiveCMS
+export PROJECT_HOME=/mnt/git-repo/DecisiveCMS/source/scala
 source "${PROJECT_HOME}/scripts/common_func.sh";
 SPARK_HOME="/usr/local/spark";
 JOB_CLASS="com.scoopwhoop.dcms.RunApplication";

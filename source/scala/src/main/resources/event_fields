@@ -1,0 +1,9 @@
+properties.url,url
+properties.distinct_id,user_id
+event,event
+properties.time,time
+properties.category,category
+properties.from,from_url
+properties.which,event_destination
+properties.where,screen_location
+properties.$referring_domain,referring_domain
