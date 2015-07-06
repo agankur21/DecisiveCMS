@@ -5,6 +5,7 @@ import org.joda.time.format.DateTimeFormat
 import org.joda.time.{Days, DateTime}
 import com.datastax.spark.connector.{CassandraRow, UDTValue}
 import scala.io.Source
+import net.liftweb.json._
 
 object CommonFunctions extends Serializable {
 
@@ -128,5 +129,14 @@ object CommonFunctions extends Serializable {
         output
     }
     
+    def getTitleFromURL(url:String):String = {
+        val apiHead =  "http://www.scoopwhoop.com/api/v1/?vendor=android&type=single&url="
+        val api  = apiHead + url
+        val jsonData =Source.fromURL(api,"UTF-8").mkString
+        val jsonObj = parse(jsonData)
+        val componentList = for(JField("title",JString(x)) <- jsonObj ) yield x
+        componentList.toString().stripPrefix("List(").stripSuffix(")")
+    }
+
 
 }

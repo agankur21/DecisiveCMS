@@ -32,8 +32,8 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
     
 
     CREATE TABLE IF NOT EXISTS pages(
-        url                         text PRIMARY KEY,
-        title                       text,
+        title                       text PRIMARY KEY,
+        url                         text,
         category                    text,
         author                      text,
         screen_height               text, 
@@ -42,7 +42,7 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
 
 
     CREATE TABLE IF NOT EXISTS google_analytics_data(
-        url                         text,
+        title                       text,
         start_date                  text,
         end_date                    text,
         page_views                  int,
@@ -52,12 +52,12 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         bounce_rate                 double,
         exit                        double,
         page_value                  double,
-        PRIMARY KEY (url,start_date,end_date)
+        PRIMARY KEY (title,start_date,end_date)
     );
 
         
     CREATE TABLE IF NOT EXISTS events(
-        url                         text,
+        title                       text,
         user_id                     text,
         event                       text,
         time                        bigint,
@@ -66,7 +66,7 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         event_destination           text,
         screen_location             text,
         referring_domain            text,
-        PRIMARY KEY ((url,user_id,event),time)
+        PRIMARY KEY ((title,user_id,event),time)
     )
         WITH CLUSTERING ORDER BY (time DESC)
     ;

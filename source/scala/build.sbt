@@ -15,6 +15,7 @@ resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases"
 libraryDependencies ++= Seq(
     "org.joda" % "joda-convert" % "1.7",
     "joda-time" % "joda-time" % "2.7",
+    "net.liftweb" % "lift-json_2.10" % "2.5.1",
     "org.apache.spark" % "spark-core_2.10" % "1.4.0" % "provided",
     "org.apache.spark" % "spark-mllib_2.10" % "1.4.0" % "provided",
     "org.apache.spark" % "spark-sql_2.10" % "1.4.0" % "provided",
