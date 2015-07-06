@@ -15,6 +15,7 @@ class StatisticalProcessing extends Serializable {
         clicks: Int, shares: Int, ga_page_views: Int, ga_unique_page_views: Int, ga_avg_time: Double,
         ga_entrances: Int, ga_bounce_number: Double,count:Int)) => CommonFunctions.GoogleEventData(category,start_date,end_date,desktop_views,
             mobile_views,clicks,shares,ga_page_views,ga_unique_page_views,ga_avg_time/count,ga_entrances,ga_bounce_number/ga_entrances) }
+        categoryData.saveAsTextFile("/opt/scoopwhoop/category_stats")
         categoryData.saveToCassandra(keySpace,outTable,SomeColumns("category","start_date","end_date","desktop_views",
             "mobile_views","clicks","shares","ga_page_views","ga_unique_page_views","ga_avg_time","ga_entrances","ga_bounce_rate"))
     }
