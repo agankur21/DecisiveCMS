@@ -32,11 +32,12 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
     
 
     CREATE TABLE IF NOT EXISTS pages(
-        title                       text PRIMARY KEY,
+        title                       text,
+        screen_height               text,
+        screen_width                text
         category                    text,
         author                      text,
-        screen_height               text, 
-        screen_width                text
+        PRIMARY KEY (title,screen_height,screen_width)
     );
 
 
