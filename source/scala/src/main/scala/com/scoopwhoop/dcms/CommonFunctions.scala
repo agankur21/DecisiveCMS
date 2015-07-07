@@ -1,6 +1,7 @@
 package com.scoopwhoop.dcms
 
 import java.text.NumberFormat
+import net.liftweb.json.JsonParser.ParseException
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.{Days, DateTime}
 import com.datastax.spark.connector.{CassandraRow, UDTValue}
@@ -133,18 +134,30 @@ object CommonFunctions extends Serializable {
         val apiHead =  "http://www.scoopwhoop.com/api/v1/?vendor=android&type=single&url="
         val api  = apiHead + url
         val jsonData =Source.fromURL(api,"UTF-8").mkString
-        val jsonObj = parse(jsonData)
-        val componentList = for(JField("title",JString(x)) <- jsonObj ) yield x
-        componentList.toString().stripPrefix("List(").stripSuffix(")")
+        try {
+            val jsonObj = parse(jsonData)
+            val componentList = for (JField("title", JString(x)) <- jsonObj) yield x
+            return componentList.toString().stripPrefix("List(").stripSuffix(")")
+        }
+        catch {
+            case pe: ParseException => return ""
+                
+        }
     }
 
     def getCategoryFromURL(url:String):String = {
         val apiHead =  "http://www.scoopwhoop.com/api/v1/?vendor=android&type=single&url="
         val api  = apiHead + url
         val jsonData =Source.fromURL(api,"UTF-8").mkString
-        val jsonObj = parse(jsonData)
-        val componentList = for(JField("category",JString(x)) <- jsonObj ) yield x
-        componentList.toString().stripPrefix("List(").stripSuffix(")")
+        try {
+            val jsonObj = parse(jsonData)
+            val componentList = for (JField("category", JString(x)) <- jsonObj) yield x
+            return componentList.toString().stripPrefix("List(").stripSuffix(")")
+            
+        }
+        catch {
+            case pe: ParseException => return ""
+        }
     }
 
 }
