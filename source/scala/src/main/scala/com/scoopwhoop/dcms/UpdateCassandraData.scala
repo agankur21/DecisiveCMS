@@ -69,7 +69,7 @@ class UpdateCassandraData extends Serializable  {
         Logger.logInfo(s"Updating the Cassandra Table $keySpace.$table............. ")
         val pages = eventData.select("properties.title","properties.author",
             "properties.$screen_height","properties.$screen_width").distinct
-        pages.map {case(x:Row) => (x(0),x(1),x(2),x(3)) }.saveToCassandra(keySpace, table,
+        pages.map {case(x:Row) => (x(0),x(1),x(2),x(3)) }.filter(_._1 != "").saveToCassandra(keySpace, table,
             SomeColumns("title","author", "screen_height","screen_width"))
         Logger.logInfo(s"Cassandra Table $keySpace.$table Updated !!")
     }
