@@ -5,7 +5,7 @@ import com.datastax.spark.connector._
 class StatisticalProcessing extends Serializable {
 
     def mergeEventGoogleData(sparkContext: SparkContext, keySpace: String, eventTable: String, gaTable: String, outTable: String): Unit = {
-        val rawEvents = sparkContext.cassandraTable(keySpace, eventTable).select("title", "event", "time", "category")
+        val rawEvents = sparkContext.cassandraTable(keySpace, eventTable).select("title", "event", "time")
         val joinedTable  = rawEvents.joinWithCassandraTable("dcms","google_analytics_data").coalesce(10000).cache
         val categoryData = joinedTable.filter(f => (CommonFunctions.isGreaterOrEqual(f._1.getLong("time"), f._2.getString("start_date"))) &&
             (CommonFunctions.isLowerOrEqual(f._1.getLong("time"), f._2.getString("end_date")))).map(CommonFunctions.processJoinedRow)

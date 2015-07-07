@@ -33,7 +33,6 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
 
     CREATE TABLE IF NOT EXISTS pages(
         title                       text PRIMARY KEY,
-        url                         text,
         category                    text,
         author                      text,
         screen_height               text, 
@@ -45,6 +44,7 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         title                       text,
         start_date                  text,
         end_date                    text,
+        category                    text,
         page_views                  int,
         unique_page_views           int,
         avg_time_per_page           double,
@@ -54,7 +54,7 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         page_value                  double,
         PRIMARY KEY (title,start_date,end_date)
     );
-
+    
         
     CREATE TABLE IF NOT EXISTS events(
         title                       text,

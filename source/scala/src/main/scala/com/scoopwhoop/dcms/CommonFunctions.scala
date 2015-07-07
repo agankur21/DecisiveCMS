@@ -122,7 +122,7 @@ object CommonFunctions extends Serializable {
     def processJoinedRow(data:(CassandraRow,CassandraRow)):(String,String,String,Int,Int,Int,Int,Int,Int,Double,Int,Double,Int) ={
         val (eventRow,gaRow) = data
         val eventCount :(Int,Int,Int,Int) = getEventCount(eventRow.getString("event"))
-        val output = (eventRow.getString("category"),gaRow.getString("start_date"),gaRow.getString("end_date"),
+        val output = (gaRow.getString("category"),gaRow.getString("start_date"),gaRow.getString("end_date"),
             eventCount._1,eventCount._2,eventCount._3,eventCount._4,gaRow.getInt("page_views"),gaRow.getInt("unique_page_views"),
             gaRow.getDouble("avg_time_per_page"),gaRow.getInt("entrances"),gaRow.getDouble("bounce_rate")*gaRow.getInt("entrances"),
             1)
@@ -138,5 +138,13 @@ object CommonFunctions extends Serializable {
         componentList.toString().stripPrefix("List(").stripSuffix(")")
     }
 
+    def getCategoryFromURL(url:String):String = {
+        val apiHead =  "http://www.scoopwhoop.com/api/v1/?vendor=android&type=single&url="
+        val api  = apiHead + url
+        val jsonData =Source.fromURL(api,"UTF-8").mkString
+        val jsonObj = parse(jsonData)
+        val componentList = for(JField("category",JString(x)) <- jsonObj ) yield x
+        componentList.toString().stripPrefix("List(").stripSuffix(")")
+    }
 
 }
