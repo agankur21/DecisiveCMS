@@ -7,6 +7,7 @@ import org.joda.time.{Days, DateTime}
 import com.datastax.spark.connector.{CassandraRow, UDTValue}
 import scala.io.Source
 import net.liftweb.json._
+import org.apache.commons.lang3.StringEscapeUtils
 
 object CommonFunctions extends Serializable {
 
@@ -137,7 +138,7 @@ object CommonFunctions extends Serializable {
         try {
             val jsonObj = parse(jsonData)
             val componentList = for (JField("title", JString(x)) <- jsonObj) yield x
-            return componentList.toString().stripPrefix("List(").stripSuffix(")")
+            return StringEscapeUtils.unescapeHtml4(componentList.toString().stripPrefix("List(").stripSuffix(")"))
         }
         catch {
             case pe: ParseException => return ""

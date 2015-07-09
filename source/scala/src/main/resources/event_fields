@@ -1,4 +1,4 @@
-properties.url,url
+properties.title,title
 properties.distinct_id,user_id
 event,event
 properties.time,time
