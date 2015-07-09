@@ -138,7 +138,7 @@ object CommonFunctions extends Serializable {
         try {
             val jsonObj = parse(jsonData)
             val componentList = for (JField("title", JString(x)) <- jsonObj) yield x
-            return StringEscapeUtils.unescapeHtml4(componentList.toString().stripPrefix("List(").stripSuffix(")"))
+            return StringEscapeUtils.unescapeHtml4(componentList.toString().stripPrefix("List(").stripSuffix(")").replaceAll("\\p{C}", ""))
         }
         catch {
             case pe: ParseException => return ""

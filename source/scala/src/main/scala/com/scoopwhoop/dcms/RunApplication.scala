@@ -14,8 +14,8 @@ object RunApplication {
         //updateData.updateUsersData(eventsData,"dcms","users")
         //updateData.updatePageData(eventsData,"dcms","pages")
         updateData.updateGoogleAnalyticsData(googleAnalyticsData,"dcms","google_analytics_data")
-        val statisticalProcessing  = new StatisticalProcessing()
-        statisticalProcessing.mergeEventGoogleData(sparkContext,"dcms","events","google_analytics_data","google_category_statistics")
+        //val statisticalProcessing  = new StatisticalProcessing()
+        //statisticalProcessing.mergeEventGoogleData(sparkContext,"dcms","events","google_analytics_data","google_category_statistics")
         sparkContext.stop()
     }
 }
