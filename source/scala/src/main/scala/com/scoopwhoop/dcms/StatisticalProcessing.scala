@@ -1,5 +1,6 @@
 package com.scoopwhoop.dcms
 import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 import com.datastax.spark.connector._
 
 class StatisticalProcessing extends Serializable {
@@ -7,6 +8,7 @@ class StatisticalProcessing extends Serializable {
     def mergeEventGoogleData(sparkContext: SparkContext, keySpace: String, eventTable: String, gaTable: String, outTable: String): Unit = {
         val rawEvents = sparkContext.cassandraTable(keySpace, eventTable).select("title", "event", "time")
         val joinedTable  = rawEvents.joinWithCassandraTable("dcms","google_analytics_data").coalesce(10000).cache
+        
         val categoryData = joinedTable.filter(f => (CommonFunctions.isGreaterOrEqual(f._1.getLong("time"), f._2.getString("start_date"))) &&
             (CommonFunctions.isLowerOrEqual(f._1.getLong("time"), f._2.getString("end_date")))).map(CommonFunctions.processJoinedRow)
             .map(f => (f._1, f._2, f._3) ->(f._4,f._5,f._6,f._7,f._8,f._9,f._10,f._11,f._12,f._13))
@@ -15,8 +17,21 @@ class StatisticalProcessing extends Serializable {
         clicks: Int, shares: Int, ga_page_views: Int, ga_unique_page_views: Int, ga_avg_time: Double,
         ga_entrances: Int, ga_bounce_number: Double,count:Int)) => CommonFunctions.GoogleEventData(category,start_date,end_date,desktop_views,
             mobile_views,clicks,shares,ga_page_views,ga_unique_page_views,ga_avg_time/count,ga_entrances,ga_bounce_number/ga_entrances) }
-        categoryData.saveAsTextFile("/opt/scoopwhoop/category_stats")
+        
+        val outputTextData = categoryData.map {case(x:CommonFunctions.GoogleEventData) => (x.category,x.start_date,x.end_date,x.desktop_views,x.mobile_views,x.clicks,
+                x.shares,x.ga_page_views,x.ga_unique_page_views,x.ga_avg_time,x.ga_entrances,x.ga_bounce_rate).productIterator.toList.mkString("\t")}
+        
+        putData(sparkContext,outputTextData,"/opt/scoopwhoop/category_stats/out")
+        
         categoryData.filter(_.category != "").saveToCassandra(keySpace,outTable,SomeColumns("category","start_date","end_date","desktop_views",
             "mobile_views","clicks","shares","ga_page_views","ga_unique_page_views","ga_avg_time","ga_entrances","ga_bounce_rate"))
     }
+
+    def putData(sparkContext: SparkContext,data: RDD[String],path: String): Unit = {
+        val hadoopConf = sparkContext.hadoopConfiguration
+        val hdfs = org.apache.hadoop.fs.FileSystem.get(new java.net.URI(path), hadoopConf)
+        try { hdfs.delete(new org.apache.hadoop.fs.Path(path), true) } catch { case _ : Throwable => { } }
+        data.saveAsTextFile(path);
+    }
+
 }
