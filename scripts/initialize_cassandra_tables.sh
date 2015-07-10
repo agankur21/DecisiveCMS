@@ -52,7 +52,7 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         bounce_rate                 double,
         exit                        double,
         page_value                  double,
-        PRIMARY KEY (title,start_date,end_date)
+        PRIMARY KEY (title,start_date,end_date,category)
     );
     
         
