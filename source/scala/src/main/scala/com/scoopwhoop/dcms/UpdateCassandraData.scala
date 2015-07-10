@@ -19,7 +19,8 @@ class UpdateCassandraData extends Serializable  {
     }
     
     def completeURL(path:String):String = {
-        "http://www.scoopwhoop.com" +path.split(" ")(0).stripPrefix("\"").stripSuffix("\"").trim
+        val shortPath = path.split("/").slice(0,3).mkString("/")
+        "http://www.scoopwhoop.com" +shortPath.split(" ")(0).stripPrefix("\"").stripSuffix("\"").trim
     }
     
     def getGoogleAnalyticsData(sparkContext: SparkContext, path: String):DataFrame = {
