@@ -2,6 +2,9 @@ properties.title,title
 properties.distinct_id,user_id
 event,event
 properties.time,time
+properties.$region,region
+properties.$city,city
+properties.mp_country_code,country_code
 properties.category,category
 properties.from,from_url
 properties.which,event_destination

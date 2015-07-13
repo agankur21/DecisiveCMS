@@ -12,7 +12,7 @@ class UpdateCassandraData extends Serializable  {
 
     case class GoogleData(title:String,start_date:String,end_date:String,category:String,page_views:Int,unique_page_views:Int,
                           avg_time_per_page:Double,entrances:Int,bounce_rate:Double,exit:Double,page_value:Double) extends Serializable
-
+    
     def getEventsData(sparkContext: SparkContext, path: String): DataFrame = {
         val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)
         return  sqlContext.read.json(path)
@@ -30,8 +30,8 @@ class UpdateCassandraData extends Serializable  {
         val startEndDate = inputFile.zipWithIndex.filter(_._2 == 3).map(_._1.replaceAll("#","").trim.split("-")).collect
         val Array(startDate,endDate) = startEndDate(0).map(CommonFunctions.convertDateStringFormat)
         val output = inputFile.zipWithIndex.filter(_._2 > 6).map(_._1).filter(x => (x.startsWith("/") || x.startsWith("\"/"))).map(CommonFunctions.cleanString)
-            .map(_.split(",")).map(p => (CommonFunctions.getTitleFromURL(completeURL(p(0))), startDate,endDate,
-            CommonFunctions.getCategoryFromURL(completeURL(p(0)))) -> (p(1).toInt,p(2).toInt,
+            .map(_.split(",")).map(p => (ParseDataFromAPI.getTitleFromURL(completeURL(p(0))), startDate,endDate,
+            ParseDataFromAPI.getCategoryFromURL(completeURL(p(0)))) -> (p(1).toInt,p(2).toInt,
             CommonFunctions.getTimeInMinutes(p(3)),p(4).toInt, CommonFunctions.getNumberFromPercentage(p(5)),
             CommonFunctions.getNumberFromPercentage(p(6)), CommonFunctions.getNumberFromCurrency(p(7)),1))
             .mapValues {case(page_views:Int,unique_page_views:Int,avg_time_per_page:Double,entrances:Int,bounce_rate:Double,exit:Double,page_value:Double,count:Int) => 
@@ -54,9 +54,9 @@ class UpdateCassandraData extends Serializable  {
     def updateEventsData(eventData: DataFrame,keySpace:String,table:String):Unit = {
         Logger.logInfo(s"Updating the Cassandra Table $keySpace.$table............. ")
         val events = eventData.select(jsonFields(0),jsonFields(1),jsonFields(2),jsonFields(3),jsonFields(4),jsonFields(5),
-            jsonFields(6),jsonFields(7),jsonFields(8)).distinct
-        events.map {case(x:Row) => (x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8)) }.saveToCassandra(keySpace, table,
-            SomeColumns("title","user_id","event","time","category","from_url","event_destination","screen_location","referring_domain"))
+            jsonFields(6),jsonFields(7),jsonFields(8),jsonFields(9),jsonFields(10),jsonFields(11)).distinct
+        events.map {case(x:Row) => (x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9),x(10),x(11)) }.saveToCassandra(keySpace, table,
+            SomeColumns("title","user_id","event","time","region","city","country_code","category","from_url","event_destination","screen_location","referring_domain"))
         Logger.logInfo(s"Cassandra Table $keySpace.$table Updated !!")
     }
 
@@ -68,14 +68,30 @@ class UpdateCassandraData extends Serializable  {
             SomeColumns("user_id","browser","browser_version","region","city","country_code","os","device","device_type"))
         Logger.logInfo(s"Cassandra Table $keySpace.$table Updated !!")
     }
-
-    def updatePageData(eventData: DataFrame,keySpace:String,table:String):Unit = {
+    
+    def updatePageData(data: DataFrame,keySpace:String,table:String):Unit = {
         Logger.logInfo(s"Updating the Cassandra Table $keySpace.$table............. ")
-        val pages = eventData.select("properties.title","properties.author",
-            "properties.$screen_height","properties.$screen_width").distinct
-        pages.map {case(x:Row) => (x(0),x(1),x(2),x(3)) }.filter(_._1 != "").saveToCassandra(keySpace, table,
-            SomeColumns("title","author", "screen_height","screen_width"))
+        val pages = data.select("title","link","author","pubon","s_heading","category","tags").distinct
+        pages.map {case(x:Row) => (x(0),x(1),x(2),x(3),x(4),x(5),x(6)) }.filter(_._1 != "").saveToCassandra(keySpace, table,
+            SomeColumns("title","url", "author","published_date","super_heading","category","tags"))
         Logger.logInfo(s"Cassandra Table $keySpace.$table Updated !!")
+    }
+    
+    def getAndUpdatePagesData(sparkContext: SparkContext,keySpace:String,table:String):Unit = {
+        val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)
+        import sqlContext.implicits._
+        var listPages : List[CommonFunctions.Page] = List()
+        var offset:Int = 0
+        val limit :Int = 100
+        var pageDataFrame : DataFrame = null
+        do{
+            listPages = ParseDataFromAPI.getPagesFromAPI(offset,limit)
+            pageDataFrame = sparkContext.parallelize(listPages).toDF()
+            updatePageData(pageDataFrame,keySpace,table)
+            offset += 100
+        }
+        while(listPages.length > 0)
+        
     }
 
 

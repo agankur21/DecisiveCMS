@@ -11,7 +11,8 @@ import org.apache.commons.lang3.StringEscapeUtils
 
 object CommonFunctions extends Serializable {
 
-
+    case class Page(title:String,link:String,author:String,pubon:String,s_heading:String,category:Set[String],tags:Set[String])
+    
     def getDayWeek(timestamp: Long): String = {
         val date_time = new DateTime(timestamp*1000L);
         val day = date_time.dayOfWeek().getAsText;
@@ -107,58 +108,9 @@ object CommonFunctions extends Serializable {
         
     }
 
-    case class GoogleEventData(category: String, start_date: String, end_date: String, desktop_views: Int, mobile_views: Int,
-                               clicks: Int, shares: Int, ga_page_views: Int, ga_unique_page_views: Int, ga_avg_time: Double,
-                               ga_entrances: Int, ga_bounce_rate: Double)
 
-    def getEventCount(event: String): (Int, Int, Int, Int) = {
-        event match {
-            case "Desktop PVs" => (1, 0, 0, 0)
-            case "Mobile PVs" => (0, 1, 0, 0)
-            case "itemClick" => (0, 0, 1, 0)
-            case "shareClick" => (0, 0, 0, 1)
-            case _ => (0, 0, 0, 0)
-        }
-    }
 
-    def processJoinedRow(data:(CassandraRow,CassandraRow)):(String,String,String,Int,Int,Int,Int,Int,Int,Double,Int,Double,Int) ={
-        val (eventRow,gaRow) = data
-        val eventCount :(Int,Int,Int,Int) = getEventCount(eventRow.getString("event"))
-        val output = (gaRow.getString("category"),gaRow.getString("start_date"),gaRow.getString("end_date"),
-            eventCount._1,eventCount._2,eventCount._3,eventCount._4,gaRow.getInt("page_views"),gaRow.getInt("unique_page_views"),
-            gaRow.getDouble("avg_time_per_page"),gaRow.getInt("entrances"),gaRow.getDouble("bounce_rate")*gaRow.getInt("entrances"),
-            1)
-        output
-    }
-    
-    def getTitleFromURL(url:String):String = {
-        val apiHead =  "http://www.scoopwhoop.com/api/v1/?vendor=android&type=single&url="
-        val api  = apiHead + url
-        val jsonData =Source.fromURL(api,"UTF-8").mkString
-        try {
-            val jsonObj = parse(jsonData)
-            val componentList = for (JField("title", JString(x)) <- jsonObj) yield x
-            return StringEscapeUtils.unescapeHtml4(componentList.toString().stripPrefix("List(").stripSuffix(")").replaceAll("\\p{C}", ""))
-        }
-        catch {
-            case pe: ParseException => return ""
-                
-        }
-    }
 
-    def getCategoryFromURL(url:String):String = {
-        val apiHead =  "http://www.scoopwhoop.com/api/v1/?vendor=android&type=single&url="
-        val api  = apiHead + url
-        val jsonData =Source.fromURL(api,"UTF-8").mkString
-        try {
-            val jsonObj = parse(jsonData)
-            val componentList = for (JField("category", JString(x)) <- jsonObj) yield x
-            return componentList.toString().stripPrefix("List(").stripSuffix(")")
-            
-        }
-        catch {
-            case pe: ParseException => return ""
-        }
-    }
+
 
 }

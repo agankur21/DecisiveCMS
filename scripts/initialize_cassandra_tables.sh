@@ -33,10 +33,13 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
 
     CREATE TABLE IF NOT EXISTS pages(
         title                       text,
-        screen_height               text,
-        screen_width                text,
+        url                         text,
+        published_date              text,
         author                      text,
-        PRIMARY KEY (title,screen_height,screen_width)
+        super_heading               text,
+        category                   set<text>,
+        tags                       set<text>,
+        PRIMARY KEY (title,url)
     );
 
 
@@ -61,6 +64,9 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         user_id                     text,
         event                       text,
         time                        bigint,
+        region                      text,
+        city                        text,
+        country_code                text,
         category                    text,
         from_url                    text,
         event_destination           text,
