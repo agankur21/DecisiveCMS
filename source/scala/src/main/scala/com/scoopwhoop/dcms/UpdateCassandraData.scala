@@ -46,8 +46,7 @@ class UpdateCassandraData extends Serializable  {
     def updateGoogleAnalyticsData(gaData:DataFrame,keySpace:String,table:String):Unit= {
         Logger.logInfo(s"Updating the Cassandra Table $keySpace.$table............. ")
         gaData.map {case(x:Row) => (x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9),x(10)) }.filter(_._1 != "").saveToCassandra(keySpace, table,
-            SomeColumns("title","start_date","end_date","category","page_views","unique_page_views","avg_time_per_page",
-                "entrances","bounce_rate","exit","page_value"))
+           SomeColumns("title","start_date","end_date","category","page_views","unique_page_views","avg_time_per_page","entrances","bounce_rate","exit","page_value"))
         Logger.logInfo(s"Cassandra Table $keySpace.$table Updated !!")
     }
     
