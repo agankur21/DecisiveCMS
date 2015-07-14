@@ -57,7 +57,7 @@ class UpdateCassandraData extends Serializable  {
         Logger.logInfo(s"Updating the Cassandra Table $keySpace.$table............. ")
         val events = eventData.select(jsonFields(0),jsonFields(1),jsonFields(2),jsonFields(3),jsonFields(4),jsonFields(5),
             jsonFields(6),jsonFields(7),jsonFields(8),jsonFields(9),jsonFields(10),jsonFields(11)).distinct
-        events.map {case(x:Row) => (x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9),x(10),x(11)) }.saveToCassandra(keySpace, table,
+        events.map {case(x:Row) => (x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),x(9),x(10),x(11)) }.filter(_._1 != "").saveToCassandra(keySpace, table,
             SomeColumns("title","user_id","event","time","region","city","country_code","category","from_url","event_destination","screen_location","referring_domain"))
         Logger.logInfo(s"Cassandra Table $keySpace.$table Updated !!")
     }
@@ -72,10 +72,9 @@ class UpdateCassandraData extends Serializable  {
     }
     
     def updatePageData(data: RDD[CommonFunctions.Page],keySpace:String,table:String):Unit = {
-        Logger.logInfo(s"Updating the Cassandra Table $keySpace.$table............. ")
         data.map {case(x:CommonFunctions.Page) => (StringEscapeUtils.unescapeHtml4(x.title).replaceAll("\\p{C}", ""),URLDecoder.decode(x.link,"UTF-8"),x.author,x.pubon,x.s_heading,x.category,x.tags) }.filter(_._1 != "").saveToCassandra(keySpace, table,
             SomeColumns("title","url", "author","published_date","super_heading","category","tags"))
-        Logger.logInfo(s"Cassandra Table $keySpace.$table Updated !!")
+        
     }
     
     def getAndUpdatePagesData(sparkContext: SparkContext,keySpace:String,table:String):Unit = {
@@ -85,6 +84,7 @@ class UpdateCassandraData extends Serializable  {
         var offset:Int = 0
         val limit :Int = 100
         var pageDataFrame : RDD[CommonFunctions.Page] = null
+        Logger.logInfo(s"Updating the Cassandra Table $keySpace.$table............. ")
         do{
             listPages = ParseDataFromAPI.getPagesFromAPI(offset,limit)
             pageDataFrame = sparkContext.parallelize(listPages)
@@ -93,6 +93,7 @@ class UpdateCassandraData extends Serializable  {
             offset += 100
         }
         while(listPages.length > 0)
+        Logger.logInfo(s"Cassandra Table $keySpace.$table Updated !!")
         
     }
 
