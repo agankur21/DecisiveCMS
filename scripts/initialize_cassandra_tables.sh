@@ -37,8 +37,8 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         published_date              text,
         author                      text,
         super_heading               text,
-        category                   set<text>,
-        tags                       set<text>,
+        category                    list<text>,
+        tags                        list<text>,
         PRIMARY KEY (title,url)
     );
 
@@ -72,9 +72,9 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         event_destination           text,
         screen_location             text,
         referring_domain            text,
-        PRIMARY KEY ((title,user_id,event),time)
+        PRIMARY KEY (title,user_id,event,time)
     )
-        WITH CLUSTERING ORDER BY (time DESC)
+
     ;
         
     CREATE TABLE IF NOT EXISTS google_category_statistics(
@@ -88,9 +88,20 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         ga_page_views               int,
         ga_unique_page_views        int,
         ga_avg_time                 double,
-        ga_entrances                 int,
+        ga_entrances                int,
         ga_bounce_rate              double,
         PRIMARY KEY (category,start_date,end_date)
     )
+    ;
+    
+    CREATE TABLE IF NOT EXISTS tag_statistics(
+        tag                         text PRIMARY KEY,
+        region                      list<text>,
+        day                         list<text>,
+        time                        list<text>
+    )
+            
+    
+    
 
 "

@@ -8,10 +8,11 @@ import com.datastax.spark.connector.{CassandraRow, UDTValue}
 import scala.io.Source
 import net.liftweb.json._
 import org.apache.commons.lang3.StringEscapeUtils
+import java.util.Arrays
 
 object CommonFunctions extends Serializable {
 
-    case class Page(title:String,link:String,author:String,pubon:String,s_heading:String,category:Set[String],tags:Set[String])
+    case class Page(title:String,link:String,author:String,pubon:String,s_heading:String,category:List[String],tags:List[String])
     
     def getDayWeek(timestamp: Long): String = {
         val date_time = new DateTime(timestamp*1000L);
@@ -108,6 +109,13 @@ object CommonFunctions extends Serializable {
         
     }
 
+    def getTopElementsByFrequency(listElement: List[String], numTopElement:Int) :List[String] ={
+        val elementWithFrequencies =   listElement.map(x => x -> 1).groupBy(_._1).mapValues{ case (list:List[(String,Int)]) => 
+                                        list.map(x => x._2).foldLeft(0)((a,b)=> a+b)}
+                                        .toList.sortWith(_._2 > _._2)
+        val out  = elementWithFrequencies.slice(0,numTopElement).map(_._1)
+        out
+    } 
 
 
 

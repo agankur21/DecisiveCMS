@@ -1,8 +1,11 @@
 package com.scoopwhoop.dcms
 
+import org.apache.commons.lang3.StringEscapeUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{DataFrame,Row}
 import com.datastax.spark.connector._
+import org.apache.spark.rdd.RDD
+import java.net.URLDecoder
 
 class UpdateCassandraData extends Serializable  {
     val eventFields = CommonFunctions.readResourceFile("event_fields")
@@ -68,10 +71,9 @@ class UpdateCassandraData extends Serializable  {
         Logger.logInfo(s"Cassandra Table $keySpace.$table Updated !!")
     }
     
-    def updatePageData(data: DataFrame,keySpace:String,table:String):Unit = {
+    def updatePageData(data: RDD[CommonFunctions.Page],keySpace:String,table:String):Unit = {
         Logger.logInfo(s"Updating the Cassandra Table $keySpace.$table............. ")
-        val pages = data.select("title","link","author","pubon","s_heading","category","tags").distinct
-        pages.map {case(x:Row) => (x(0),x(1),x(2),x(3),x(4),x(5),x(6)) }.filter(_._1 != "").saveToCassandra(keySpace, table,
+        data.map {case(x:CommonFunctions.Page) => (StringEscapeUtils.unescapeHtml4(x.title).replaceAll("\\p{C}", ""),URLDecoder.decode(x.link,"UTF-8"),x.author,x.pubon,x.s_heading,x.category,x.tags) }.filter(_._1 != "").saveToCassandra(keySpace, table,
             SomeColumns("title","url", "author","published_date","super_heading","category","tags"))
         Logger.logInfo(s"Cassandra Table $keySpace.$table Updated !!")
     }
@@ -82,11 +84,12 @@ class UpdateCassandraData extends Serializable  {
         var listPages : List[CommonFunctions.Page] = List()
         var offset:Int = 0
         val limit :Int = 100
-        var pageDataFrame : DataFrame = null
+        var pageDataFrame : RDD[CommonFunctions.Page] = null
         do{
             listPages = ParseDataFromAPI.getPagesFromAPI(offset,limit)
-            pageDataFrame = sparkContext.parallelize(listPages).toDF()
+            pageDataFrame = sparkContext.parallelize(listPages)
             updatePageData(pageDataFrame,keySpace,table)
+            Logger.logInfo(s"Updated pages from $offset to next $limit")
             offset += 100
         }
         while(listPages.length > 0)
