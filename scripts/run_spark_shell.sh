@@ -26,7 +26,8 @@ function MAIN()
    loggerInfo "***      Script: $0   START  ***";
   
    loggerInfo "Running Spark shell with Jar : ${JOB_JAR} "
-   ${SPARK_HOME}/bin/spark-shell --master ${MASTER}  --jars ${JOB_JAR}  --executor-memory 1g --driver-memory 5g --conf spark.cassandra.connection.host=10.2.3.10 ;
+   ${SPARK_HOME}/bin/spark-shell --master ${MASTER}  --jars ${JOB_JAR}  --executor-memory 3g --driver-memory 3g --conf spark.cassandra.connection.host=10.2.3.10
+   --conf spark.shuffle.spill=false --conf "spark.executor.extraJavaOptions=-XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+UseCompressedOops";
    loggerInfo "***      Script: $0    END   ***";
 }
 ##############################################################################
