@@ -3,6 +3,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import com.datastax.spark.connector._
 import org.apache.spark.HashPartitioner
+import org.apache.spark.storage.StorageLevel
 
 class StatisticalProcessing extends Serializable {
 
@@ -75,7 +76,7 @@ class StatisticalProcessing extends Serializable {
         val titleData = pagesData.map { case (x: CassandraRow) => x.getString("title") -> x.get[List[String]]("tags")}
             .flatMap { case (x, y) => y.map((x, _))}
             .partitionBy(new HashPartitioner(numPartitions))
-        val joinedTable = titleData.join(titleEvents).map { case (title: String, (tag: String, (time: String, region: String))) => (tag, time, region)}.persist()
+        val joinedTable = titleData.join(titleEvents).map { case (title: String, (tag: String, (time: String, region: String))) => (tag, time, region)}.persist(StorageLevel.MEMORY_ONLY_SER)
         val tagTimeData = joinedTable.map(x => x._1 -> x._2).groupByKey.mapValues{ case (timeList: Iterable[String]) => (
             CommonFunctions.getTopElementsByFrequency(timeList.toList.map(x => CommonFunctions.getDayHour(x.toLong).toString), 6),
             CommonFunctions.getTopElementsByFrequency(timeList.toList.map(x => CommonFunctions.getDayWeek(x.toLong)), 3))
