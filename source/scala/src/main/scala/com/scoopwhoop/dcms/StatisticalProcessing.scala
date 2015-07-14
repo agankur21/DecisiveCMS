@@ -67,15 +67,15 @@ class StatisticalProcessing extends Serializable {
     }
 
     def mergeEventsPageData(sparkContext: SparkContext, keySpace: String, eventTable: String, pagesTable: String, outTable: String): Unit = {
-        val rawEvents = sparkContext.cassandraTable(keySpace, eventTable).select("title", "time", "region").coalesce(10000)
+        val rawEvents = sparkContext.cassandraTable(keySpace, eventTable).select("title", "time", "region").coalesce(30000)
         val numPartitions = rawEvents.partitions.size
         val titleEvents = rawEvents.map { case (x: CassandraRow) => x.getString("title") ->(x.getString("time"), x.getString("region"))}
-            .partitionBy(new HashPartitioner(numPartitions)).persist()
-        val pagesData = sparkContext.cassandraTable(keySpace, pagesTable).select("title", "tags").coalesce(10000)
+            .partitionBy(new HashPartitioner(numPartitions))
+        val pagesData = sparkContext.cassandraTable(keySpace, pagesTable).select("title", "tags").coalesce(30000)
         val titleData = pagesData.map { case (x: CassandraRow) => x.getString("title") -> x.get[List[String]]("tags")}
             .flatMap { case (x, y) => y.map((x, _))}
-            .partitionBy(new HashPartitioner(numPartitions)).persist()
-        val joinedTable = titleData.join(titleEvents).map { case (title: String, (tag: String, (time: String, region: String))) => (tag, time, region)}
+            .partitionBy(new HashPartitioner(numPartitions))
+        val joinedTable = titleData.join(titleEvents).map { case (title: String, (tag: String, (time: String, region: String))) => (tag, time, region)}.persist()
         val tagTimeData = joinedTable.map(x => x._1 -> x._2).groupByKey.mapValues{ case (timeList: Iterable[String]) => (
             CommonFunctions.getTopElementsByFrequency(timeList.toList.map(x => CommonFunctions.getDayHour(x.toLong).toString), 6),
             CommonFunctions.getTopElementsByFrequency(timeList.toList.map(x => CommonFunctions.getDayWeek(x.toLong)), 3))
