@@ -35,7 +35,7 @@ class StatisticalProcessing extends Serializable {
         val googleData = sparkContext.cassandraTable(keySpace, gaTable).select("title","start_date","end_date",
             "category","page_views","avg_time_per_page","entrances","bounce_rate")
         val joinedTable = googleData.joinWithCassandraTable(keySpace, eventTable).select("title", "event", "time").on(SomeColumns("title"))
-        val categoryData = joinedTable.filter(f => (CommonFunctions.isGreaterOrEqual(f._1.getLong("time"), f._2.getString("start_date"))) && (CommonFunctions.isLowerOrEqual(f._1.getLong("time"), f._2.getString("end_date"))))
+        val categoryData = joinedTable.filter(f => (CommonFunctions.isGreaterOrEqual(f._2.getLong("time"), f._1.getString("start_date"))) && (CommonFunctions.isLowerOrEqual(f._2.getLong("time"), f._1.getString("end_date"))))
             .map(processJoinedRowEventGoogle).filter(f => (f._1 != "") && (f._1 != null))
         val aggregateCategoryData=  categoryData.map(f => (f._1, f._2, f._3) ->(f._4, f._5, f._6, f._7, f._8, f._9, f._10, f._11, f._12))
             .reduceByKey((x, y) => (x._1 + y._1, x._2 + y._2, x._3 + y._3, x._4 + y._4, x._5 + y._5, x._6 + y._6, x._7 + y._7, x._8 + y._8, x._9 + y._9)).cache()
