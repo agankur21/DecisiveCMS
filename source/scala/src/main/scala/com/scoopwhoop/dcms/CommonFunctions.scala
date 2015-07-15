@@ -115,10 +115,15 @@ object CommonFunctions extends Serializable {
                                         .toList.sortWith(_._2 > _._2)
         val out  = elementWithFrequencies.slice(0,numTopElement).map(_._1)
         out
-    } 
+    }
 
 
-
+    def processJoinedRowPagesEvent(data: (CassandraRow, CassandraRow)) :(List[String],Long,String) = {
+        val (pagesRow, eventRow) = data
+        val tags : List[String] = pagesRow.get[List[String]]("tags")
+        val (time,region) = (eventRow.getLong("time"),eventRow.getString("region"))
+        return (tags,time,region)
+    }
 
 
 }
