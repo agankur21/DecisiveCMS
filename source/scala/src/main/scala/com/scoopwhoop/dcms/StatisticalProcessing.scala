@@ -70,23 +70,23 @@ class StatisticalProcessing extends Serializable {
     def processJoinedRowPagesEvent(data: (CassandraRow, CassandraRow)) :(List[String],Long,String) = {
         val (pagesRow, eventRow) = data
         val tags : List[String] = pagesRow.get[List[String]]("tags")
-        val (time,region) = (eventRow.getLong("time"),eventRow.getString("region"))
+        val time = eventRow.getLong("time")
+        val region = if(eventRow.isNullAt("city")) ""  else eventRow.getString("city")
         return (tags,time,region)
     }
     
 
     def mergeEventsPageData(sparkContext: SparkContext, keySpace: String, eventTable: String, pagesTable: String, outTable: String): Unit = {
         val pagesData = sparkContext.cassandraTable(keySpace, pagesTable).select("title", "tags")
-        val joinedTable = pagesData.joinWithCassandraTable(keySpace, eventTable).select("title","time","region")
-        val combinedData = joinedTable.map(processJoinedRowPagesEvent).flatMap{case(x,y,z) => x.map((_,y,z))}
-                            .persist(StorageLevel.MEMORY_ONLY_SER)
+        val joinedTable = pagesData.joinWithCassandraTable(keySpace, eventTable).select("title","time","city")
+        val combinedData = joinedTable.map(processJoinedRowPagesEvent).flatMap{case(x,y,z) => x.map((_,y,z))}.persist(StorageLevel.MEMORY_ONLY_SER)
         val tagTimeData = combinedData.map(x => x._1 -> x._2).groupByKey.mapValues{ case (timeList: Iterable[Long]) => (
             CommonFunctions.getTopElementsByFrequency(timeList.toList.map(x => CommonFunctions.getDayHour(x).toString), 6),
             CommonFunctions.getTopElementsByFrequency(timeList.toList.map(x => CommonFunctions.getDayWeek(x)), 3))
         }
         tagTimeData.saveToCassandra(keySpace, outTable, SomeColumns("tag", "time", "day"))
 
-        val tagRegionData = combinedData.map(x => x._1 -> x._3).groupByKey.mapValues{ case (regionList: Iterable[String]) =>
+        val tagRegionData = combinedData.map(x => x._1 -> x._3).filter(_._2 != "").groupByKey.mapValues{ case (regionList: Iterable[String]) =>
             CommonFunctions.getTopElementsByFrequency(regionList.toList, 20)
         }
         tagRegionData.saveToCassandra(keySpace, outTable, SomeColumns("tag", "region"))

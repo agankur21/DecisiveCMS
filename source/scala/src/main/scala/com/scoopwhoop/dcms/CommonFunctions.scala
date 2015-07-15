@@ -121,7 +121,8 @@ object CommonFunctions extends Serializable {
     def processJoinedRowPagesEvent(data: (CassandraRow, CassandraRow)) :(List[String],Long,String) = {
         val (pagesRow, eventRow) = data
         val tags : List[String] = pagesRow.get[List[String]]("tags")
-        val (time,region) = (eventRow.getLong("time"),eventRow.getString("region"))
+        val time = eventRow.getLong("time")
+        val region = if(eventRow.isNullAt("city")) ""  else eventRow.getString("city")
         return (tags,time,region)
     }
 
