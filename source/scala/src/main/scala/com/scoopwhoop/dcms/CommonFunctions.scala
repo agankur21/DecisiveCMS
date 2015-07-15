@@ -2,6 +2,8 @@ package com.scoopwhoop.dcms
 
 import java.text.NumberFormat
 import net.liftweb.json.JsonParser.ParseException
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.{Days, DateTime}
 import com.datastax.spark.connector.{CassandraRow, UDTValue}
@@ -15,12 +17,14 @@ object CommonFunctions extends Serializable {
     case class Page(title:String,link:String,author:String,pubon:String,s_heading:String,category:List[String],tags:List[String])
     
     def getDayWeek(timestamp: Long): String = {
+        if (timestamp == 0)  return ""
         val date_time = new DateTime(timestamp*1000L);
         val day = date_time.dayOfWeek().getAsText;
         day
     }
     
     def getDate(timestamp:Long):String = {
+        if (timestamp == 0)  return ""
         val date_time = new DateTime(timestamp*1000L);
         return date_time.toString(DateTimeFormat.forPattern("yyyy-MM-dd"))
     }
@@ -34,12 +38,14 @@ object CommonFunctions extends Serializable {
     }
 
     def getTimeSlot(timestamp: Long): Int = {
+        if (timestamp == 0)  return 0
         val date_time = new DateTime(timestamp*1000L);
         val time_minutes = date_time.getMinuteOfDay;
         time_minutes / 2
     }
 
     def getDayHour(timestamp: Long): Int = {
+        if (timestamp == 0)  return 0
         val date_time = new DateTime(timestamp*1000L);
         date_time.getHourOfDay
     }
@@ -113,18 +119,49 @@ object CommonFunctions extends Serializable {
         val elementWithFrequencies =   listElement.map(x => x -> 1).groupBy(_._1).mapValues{ case (list:List[(String,Int)]) => 
                                         list.map(x => x._2).foldLeft(0)((a,b)=> a+b)}
                                         .toList.sortWith(_._2 > _._2)
-        val out  = elementWithFrequencies.slice(0,numTopElement).map(_._1)
+        val out  = elementWithFrequencies.slice(0,numTopElement+1).map(_._1)
         out
     }
 
-
-    def processJoinedRowPagesEvent(data: (CassandraRow, CassandraRow)) :(List[String],Long,String) = {
-        val (pagesRow, eventRow) = data
-        val tags : List[String] = pagesRow.get[List[String]]("tags")
-        val time = eventRow.getLong("time")
-        val region = if(eventRow.isNullAt("city")) ""  else eventRow.getString("city")
-        return (tags,time,region)
+    
+    def getStringFromCassandraRow(row:CassandraRow,element:String):String = {
+        if(row.isNullAt(element)) ""  else row.getString(element)
     }
 
+    def getLongFromCassandraRow(row:CassandraRow,element:String):Long = {
+        if(row.isNullAt(element)) 0  else row.getLong(element)
+    }
+
+
+    def putData(sparkContext: SparkContext, data: RDD[String], path: String): Unit = {
+        val hadoopConf = sparkContext.hadoopConfiguration
+        val hdfs = org.apache.hadoop.fs.FileSystem.get(new java.net.URI(path), hadoopConf)
+        try {
+            hdfs.delete(new org.apache.hadoop.fs.Path(path), true)
+        } catch {
+            case _: Throwable => {}
+        }
+        data.saveAsTextFile(path);
+    }
+
+    def getEventCount(event: String): (Int, Int, Int, Int) = {
+        event match {
+            case "Desktop PVs" => (1, 0, 0, 0)
+            case "Mobile PVs" => (0, 1, 0, 0)
+            case "itemClick" => (0, 0, 1, 0)
+            case "shareClick" => (0, 0, 0, 1)
+            case _ => (0, 0, 0, 0)
+        }
+    }
+
+    def processJoinedRowEventGoogle(data: (CassandraRow, CassandraRow)): (String, String, String, Int, Int, Int, Int, Int,Double, Int, Double, Int) = {
+        val (eventRow, gaRow) = data
+        val eventCount: (Int, Int, Int, Int) = getEventCount(CommonFunctions.getStringFromCassandraRow(eventRow,"event"))
+        val output = (CommonFunctions.getStringFromCassandraRow(gaRow,"category"), CommonFunctions.getStringFromCassandraRow(gaRow,"start_date"),
+            CommonFunctions.getStringFromCassandraRow(gaRow,"end_date"),eventCount._1, eventCount._2, eventCount._3, eventCount._4, gaRow.getInt("page_views"),
+            gaRow.getDouble("avg_time_per_page"), gaRow.getInt("entrances"), gaRow.getDouble("bounce_rate") * gaRow.getInt("entrances"),
+            1)
+        output
+    }
 
 }

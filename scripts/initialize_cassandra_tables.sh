@@ -85,11 +85,8 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         mobile_views                int,
         clicks                      int,
         shares                      int,
-        ga_page_views               int,
-        ga_unique_page_views        int,
-        ga_avg_time                 double,
-        ga_entrances                int,
-        ga_bounce_rate              double,
+        avg_time                    double,
+        bounce_rate              double,
         PRIMARY KEY (category,start_date,end_date)
     )
     ;

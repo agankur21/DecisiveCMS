@@ -7,6 +7,7 @@ object RunApplication {
         val conf = new SparkConf(true).set("spark.cassandra.connection.host", "10.2.3.10")
             .setAppName("RunApplication").set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
         conf.registerKryoClasses(Array(classOf[StatisticalProcessing], classOf[UpdateCassandraData]))
+        conf.set("spark.cassandra.input.split.size_in_mb","1500")
         val sparkContext = new SparkContext(conf)
         /*val updateData = new UpdateCassandraData()
         val eventsData = updateData.getEventsData(sparkContext,"/home/cassandra/ScoopWhoop_2015-06-01")
@@ -16,8 +17,8 @@ object RunApplication {
         updateData.getAndUpdatePagesData(sparkContext,"dcms","pages")
         updateData.updateGoogleAnalyticsData(googleAnalyticsData,"dcms","google_analytics_data")*/
         val statisticalProcessing  = new StatisticalProcessing()
-        //statisticalProcessing.mergeEventGoogleData(sparkContext,"dcms","events","google_analytics_data","google_category_statistics")
-        statisticalProcessing.mergeEventsPageData(sparkContext,"dcms","events","pages","tag_statistics")
+        statisticalProcessing.mergeEventGoogleData(sparkContext,"dcms","events","google_analytics_data","google_category_statistics")
+        //statisticalProcessing.mergeEventsPageData(sparkContext,"dcms","events","pages","tag_statistics")
         sparkContext.stop()
     }
 }
