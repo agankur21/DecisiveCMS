@@ -21,7 +21,7 @@ class StatisticalProcessing extends Serializable {
     }
 
     def processJoinedRowEventGoogle(data: (CassandraRow, CassandraRow)): (String, String, String, Int, Int, Int, Int, Int,Double, Int, Double, Int) = {
-        val (eventRow, gaRow) = data
+        val (gaRow, eventRow) = data
         val eventCount: (Int, Int, Int, Int) = getEventCount(CommonFunctions.getStringFromCassandraRow(eventRow,"event"))
         val output = (CommonFunctions.getStringFromCassandraRow(gaRow,"category"), CommonFunctions.getStringFromCassandraRow(gaRow,"start_date"),
             CommonFunctions.getStringFromCassandraRow(gaRow,"end_date"),eventCount._1, eventCount._2, eventCount._3, eventCount._4, gaRow.getInt("page_views"),
@@ -32,13 +32,13 @@ class StatisticalProcessing extends Serializable {
     
     
     def mergeEventGoogleData(sparkContext: SparkContext, keySpace: String, eventTable: String, gaTable: String, outTable: String): Unit = {
-        val rawEvents = sparkContext.cassandraTable(keySpace, eventTable).select("title", "event", "time")
-        val joinedTable = rawEvents.joinWithCassandraTable("dcms", "google_analytics_data").select("title","start_date","end_date",
-        "category","page_views","avg_time_per_page","entrances","bounce_rate").on(SomeColumns("title"))
+        val googleData = sparkContext.cassandraTable(keySpace, gaTable).select("title","start_date","end_date",
+            "category","page_views","avg_time_per_page","entrances","bounce_rate")
+        val joinedTable = googleData.joinWithCassandraTable(keySpace, eventTable).select("title", "event", "time").on(SomeColumns("title"))
         val categoryData = joinedTable.filter(f => (CommonFunctions.isGreaterOrEqual(f._1.getLong("time"), f._2.getString("start_date"))) && (CommonFunctions.isLowerOrEqual(f._1.getLong("time"), f._2.getString("end_date"))))
             .map(processJoinedRowEventGoogle).filter(f => (f._1 != "") && (f._1 != null))
         val aggregateCategoryData=  categoryData.map(f => (f._1, f._2, f._3) ->(f._4, f._5, f._6, f._7, f._8, f._9, f._10, f._11, f._12))
-            .reduceByKey((x, y) => (x._1 + y._1, x._2 + y._2, x._3 + y._3, x._4 + y._4, x._5 + y._5, x._6 + y._6, x._7 + y._7, x._8 + y._8, x._9 + y._9))
+            .reduceByKey((x, y) => (x._1 + y._1, x._2 + y._2, x._3 + y._3, x._4 + y._4, x._5 + y._5, x._6 + y._6, x._7 + y._7, x._8 + y._8, x._9 + y._9)).cache()
         val googleEventData =  aggregateCategoryData.map { case ((category: String, start_date: String, end_date: String), (desktop_views: Int, mobile_views: Int,
         clicks: Int, shares: Int, ga_page_views: Int,ga_avg_time: Double,ga_entrances: Int, ga_bounce_number: Double, count: Int)) => GoogleEventData(category, start_date, end_date, desktop_views,
             mobile_views, clicks, shares,ga_avg_time / count, ga_bounce_number / ga_entrances)

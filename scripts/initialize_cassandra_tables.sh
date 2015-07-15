@@ -86,7 +86,7 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         clicks                      int,
         shares                      int,
         avg_time                    double,
-        bounce_rate              double,
+        bounce_rate                 double,
         PRIMARY KEY (category,start_date,end_date)
     )
     ;
