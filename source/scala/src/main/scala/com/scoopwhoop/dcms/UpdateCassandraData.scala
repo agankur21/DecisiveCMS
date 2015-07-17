@@ -40,7 +40,7 @@ class UpdateCassandraData extends Serializable  {
             .mapValues {case(page_views:Int,unique_page_views:Int,avg_time_per_page:Double,entrances:Int,bounce_rate:Double,exit:Double,page_value:Double,count:Int) => 
             (page_views,unique_page_views,avg_time_per_page,entrances,entrances*bounce_rate,exit*page_views,page_value,count)}
             .reduceByKey((x,y) => (x._1 + y._1,x._2 + y._2,x._3 + y._3,x._4 + y._4,x._5 + y._5,x._6 + y._6,x._7 + y._7,x._8+y._8))
-            .map(x => GoogleData(x._1._1,x._1._2,x._1._3,x._1._4,x._2._1,x._2._2,x._2._3/x._2._8,x._2._4,x._2._5/x._2._4,x._2._6/x._2._1,x._2._7))
+            .map(x => GoogleData(x._1._1,x._1._2,x._1._3,x._1._4,x._2._1,x._2._2,if (x._2._8 == 0.0 ) 0.0 else x._2._3/x._2._8,x._2._4,if (x._2._4 ==0.0) 0.0 else x._2._5/x._2._4,x._2._6/x._2._1,x._2._7))
             .toDF()
         return output;
     }

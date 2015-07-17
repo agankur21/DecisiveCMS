@@ -41,7 +41,7 @@ class StatisticalProcessing extends Serializable {
             .reduceByKey((x, y) => (x._1 + y._1, x._2 + y._2, x._3 + y._3, x._4 + y._4, x._5 + y._5, x._6 + y._6, x._7 + y._7, x._8 + y._8, x._9 + y._9)).cache()
         val googleEventData =  aggregateCategoryData.map { case ((category: String, start_date: String, end_date: String), (desktop_views: Int, mobile_views: Int,
         clicks: Int, shares: Int, ga_page_views: Int,ga_avg_time: Double,ga_entrances: Int, ga_bounce_number: Double, count: Int)) => GoogleEventData(category, start_date, end_date, desktop_views,
-            mobile_views, clicks, shares,ga_avg_time / count, ga_bounce_number / ga_entrances)
+            mobile_views, clicks, shares,ga_avg_time / count, if (ga_entrances == 0.0 ) 0.0 else ga_bounce_number / ga_entrances)
         }
         googleEventData.saveToCassandra(keySpace, outTable, SomeColumns("category", "start_date", "end_date", "desktop_views",
             "mobile_views", "clicks", "shares", "avg_time", "bounce_rate"))
