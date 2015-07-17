@@ -24,8 +24,8 @@ class StatisticalProcessing extends Serializable {
         val (gaRow, eventRow) = data
         val eventCount: (Int, Int, Int, Int) = getEventCount(CommonFunctions.getStringFromCassandraRow(eventRow,"event"))
         val output = (CommonFunctions.getStringFromCassandraRow(gaRow,"category"), CommonFunctions.getStringFromCassandraRow(gaRow,"start_date"),
-            CommonFunctions.getStringFromCassandraRow(gaRow,"end_date"),eventCount._1, eventCount._2, eventCount._3, eventCount._4, gaRow.getInt("page_views"),
-            gaRow.getDouble("avg_time_per_page"), gaRow.getInt("entrances"), gaRow.getDouble("bounce_rate") * gaRow.getInt("entrances"),
+            CommonFunctions.getStringFromCassandraRow(gaRow,"end_date"),eventCount._1, eventCount._2, eventCount._3, eventCount._4,CommonFunctions.getIntFromCassandraRow(gaRow,"page_views"),
+            CommonFunctions.getDoubleFromCassandraRow(gaRow,"avg_time_per_page"), CommonFunctions.getIntFromCassandraRow(gaRow,"entrances"), CommonFunctions.getDoubleFromCassandraRow(gaRow,"bounce_rate") * CommonFunctions.getIntFromCassandraRow(gaRow,"entrances"),
             1)
         output
     }

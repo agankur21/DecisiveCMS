@@ -132,7 +132,14 @@ object CommonFunctions extends Serializable {
         if(row.isNullAt(element)) 0  else row.getLong(element)
     }
 
+    def getIntFromCassandraRow(row:CassandraRow,element:String):Int = {
+        if(row.isNullAt(element)) 0  else row.getInt(element)
+    }
 
+    def getDoubleFromCassandraRow(row:CassandraRow,element:String):Double = {
+        if(row.isNullAt(element)) 0  else row.getDouble(element)
+    }
+    
     def putData(sparkContext: SparkContext, data: RDD[String], path: String): Unit = {
         val hadoopConf = sparkContext.hadoopConfiguration
         val hdfs = org.apache.hadoop.fs.FileSystem.get(new java.net.URI(path), hadoopConf)
