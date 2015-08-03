@@ -1,4 +1,5 @@
-package com.scoopwhoop.dcms
+package com.scoopwhoop.logger
+
 import java.util.Calendar
 
 object Logger extends Serializable{

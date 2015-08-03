@@ -1,11 +1,13 @@
 package com.scoopwhoop.dcms
 
+import com.scoopwhoop.logger.Logger
 import org.apache.commons.lang3.StringEscapeUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{DataFrame,Row}
 import com.datastax.spark.connector._
 import org.apache.spark.rdd.RDD
 import java.net.URLDecoder
+import scala.xml.XML
 
 class UpdateCassandraData extends Serializable  {
     val eventFields = CommonFunctions.readResourceFile("event_fields")
@@ -76,6 +78,7 @@ class UpdateCassandraData extends Serializable  {
             SomeColumns("title","url", "author","published_date","super_heading","category","tags"))
         
     }
+
     
     def getAndUpdatePagesData(sparkContext: SparkContext,keySpace:String,table:String):Unit = {
         val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)
@@ -94,7 +97,6 @@ class UpdateCassandraData extends Serializable  {
         }
         while(listPages.length > 0)
         Logger.logInfo(s"Cassandra Table $keySpace.$table Updated !!")
-        
     }
 
 

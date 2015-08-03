@@ -23,7 +23,8 @@ libraryDependencies ++= Seq(
     "org.apache.cassandra" % "cassandra-clientutil" % "2.1.5" ,
     "org.apache.cassandra" % "cassandra-thrift" % "2.1.5",
     "com.datastax.spark" %% "spark-cassandra-connector" % "1.4.0-M1",
-    "com.datastax.spark" %% "spark-cassandra-connector-java" % "1.4.0-M1")
+    "com.datastax.spark" %% "spark-cassandra-connector-java" % "1.4.0-M1",
+    "edu.stanford.nlp" % "stanford-corenlp" % "3.5.1")
 
 assemblySettings
 

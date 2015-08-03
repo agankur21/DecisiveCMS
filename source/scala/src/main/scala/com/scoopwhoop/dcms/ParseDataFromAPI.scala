@@ -1,10 +1,12 @@
 package com.scoopwhoop.dcms
 
+import com.scoopwhoop.logger.Logger
 import net.liftweb.json.JsonAST.{JString, JField}
 import net.liftweb.json.JsonParser.ParseException
 import net.liftweb.json._
 import org.apache.commons.lang3.StringEscapeUtils
 import scala.io.Source
+import scala.xml.XML
 
 
 object ParseDataFromAPI {
@@ -45,16 +47,38 @@ object ParseDataFromAPI {
     
     def getPagesFromAPI(offset:Int,limit:Int): List[CommonFunctions.Page] ={
         implicit val formats = DefaultFormats
-        val api = apiForMultipleURLParsing + "&offset=" + offset.toString + "&limit=" + limit.toString
+        val api = apiForMultipleURLParsing + "&offset=" + offset.toString + "&limit=" + limit.toString + "&content=1"
         val jsonData =Source.fromURL(api,"UTF-8").mkString
         try {
             val jsonObj = parse(jsonData)
             val posts = jsonObj.extract[Posts]
-            return posts.posts;
-
+            val pages = posts.posts.map{case (page:CommonFunctions.Page) =>
+                    CommonFunctions.Page(page.title,page.link,page.author,page.pubon,page.s_heading,page.category,
+                                        page.tags,getTextFromXMLContent(page.content,page.title))
+            }
+            return pages;
         }
         catch {
             case pe: ParseException => return List()
+        }
+    }
+
+
+    def getTextFromXMLContent(xmlContent:String,title :String):String = {
+        val xmlString = """<root>""" + xmlContent + """</root>"""
+        try{
+            val xml = XML.loadString(xmlString.replaceAll("""&""","""&amp;"""))
+            val textList = for (n <- xml.child) yield n.text
+            val compiledText = textList.map(_.trim()).filter(x =>(x !=  "") && (x != "\u00A0")).toArray.mkString(" ")
+            return (compiledText.replaceAll("\\p{C}", "") + " " + StringEscapeUtils.unescapeHtml4(title).replaceAll("\\p{C}", "").replaceAll("\u00A0",""))
+
+        }catch{
+            case e :Exception =>  {
+                Logger.logError("Error in content of title: " + title)
+                Logger.logError(e.getMessage)
+                return StringEscapeUtils.unescapeHtml4(title).replaceAll("\\p{C}", "").replaceAll("\u00A0","")
+            }
+
         }
     }
     

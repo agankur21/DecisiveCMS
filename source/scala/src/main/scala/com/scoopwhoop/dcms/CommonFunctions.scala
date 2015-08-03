@@ -14,7 +14,7 @@ import java.util.Arrays
 
 object CommonFunctions extends Serializable {
 
-    case class Page(title:String,link:String,author:String,pubon:String,s_heading:String,category:List[String],tags:List[String])
+    case class Page(title:String,link:String,author:String,pubon:String,s_heading:String,category:List[String],tags:List[String],content:String)
     
     def getDayWeek(timestamp: Long): String = {
         if (timestamp == 0)  return ""

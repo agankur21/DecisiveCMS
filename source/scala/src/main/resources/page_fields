@@ -1,6 +1,8 @@
-url
 title
-category
+url
+published_date
 author
-screen_height
-screen_width
+super_heading
+category
+tags
+content
