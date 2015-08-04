@@ -97,6 +97,15 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         region                      list<text>,
         day                         list<text>,
         time                        list<text>
+    );
+    
+    
+    CREATE TABLE IF NOT EXISTS pages_preferred_together(
+        title                   text,
+        start_date              text,
+        end_date                text,
+        similar_pages           list<text>,
+        PRIMARY KEY (title,start_date,end_date)
     )
             
     

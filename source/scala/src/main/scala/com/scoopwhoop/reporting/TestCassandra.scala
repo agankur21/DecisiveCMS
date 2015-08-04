@@ -1,4 +1,4 @@
-package com.scoopwhoop.dcms
+package com.scoopwhoop.reporting
 
 import com.scoopwhoop.logger.Logger
 import org.apache.spark.{SparkContext, SparkConf}
@@ -14,6 +14,6 @@ object TestCassandra {
         Logger.logInfo(rdd.count.toString)
         Logger.logInfo(rdd.first.toString)
         Logger.logInfo(rdd.map(_.getInt("value")).sum.toString)
-	sparkContext.stop()
+        sparkContext.stop()
     }
 }

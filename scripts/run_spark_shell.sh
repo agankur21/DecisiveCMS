@@ -9,7 +9,7 @@
 export PROJECT_HOME=/mnt/git-repo/DecisiveCMS/source/scala
 source "${PROJECT_HOME}/scripts/common_func.sh";
 SPARK_HOME="/usr/local/spark";
-JOB_CLASS="com.scoopwhoop.dcms.RunApplication";
+JOB_CLASS="com.scoopwhoop.recommender.RunApplication";
 JOB_JAR="${PROJECT_HOME}/target/scala-2.10/dcms-assembly.jar"
 JOB_DEP_JARS="${PROJECT_HOME}/lib/joda-time-2.7.jar,${PROJECT_HOME}/lib/joda-convert-1.7.jar"
 MASTER="spark://10.2.3.10:7077"
