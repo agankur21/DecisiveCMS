@@ -11,7 +11,7 @@ import com.scoopwhoop.logger._
 class NormalizedUserItemRating extends RatingModule {
 
     private def clean(args: String): String = {
-        args.toLowerCase.replaceAll( """(?m)\s+$""", "")
+        args.replaceAll( """(?m)\s+$""", "")
     }
 
     private def getDayDiff(timestamp: String): Int = {

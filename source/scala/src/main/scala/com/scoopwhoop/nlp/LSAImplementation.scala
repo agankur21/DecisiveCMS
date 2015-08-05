@@ -6,6 +6,7 @@ import scala.collection.mutable.ArrayBuffer
 
 
 object LSAImplementation {
+    /*
     def getSVD(rows: RDD[Vector],numConcepts:Int):SingularValueDecomposition[RowMatrix, Matrix] = {
         rows.cache()
         val mat = new RowMatrix(rows)
@@ -53,11 +54,7 @@ object LSAImplementation {
     }
     
     
-    
-
-
-
-
+    */
 
 
 

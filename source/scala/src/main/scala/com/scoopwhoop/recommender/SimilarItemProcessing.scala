@@ -6,10 +6,10 @@ import com.datastax.spark.connector._
 
 class SimilarItemProcessing extends ApplicationProcesses {
 
-    private def getEventsData(sparkContext: SparkContext, tableName: String, startDate: String, endDate: String): RDD[Array[String]] = {
+    def getEventsData(sparkContext: SparkContext, tableName: String, startDate: String, endDate: String): RDD[Array[String]] = {
         val events = sparkContext.cassandraTable("dcms", "events").select("user_id", "title", "event", "time")
-        val filteredEvents = events.map { case (row: CassandraRow) => (row.getString("user_id"),
-            row.getString("title"), row.getString("event"), row.getString("time"))
+        val filteredEvents = events.map { case (row: CassandraRow) => (CommonFunctions.getStringFromCassandraRow(row,"user_id"),
+            CommonFunctions.getStringFromCassandraRow(row,"title"), CommonFunctions.getStringFromCassandraRow(row,"event"), CommonFunctions.getStringFromCassandraRow(row,"time"))
         }
             .filter { case (user_id, title, event, time) => ((user_id != "") && (title != ""))}
             .filter { case (user_id, title, event, time) => (CommonFunctions.isGreaterOrEqual(time.toLong, startDate)

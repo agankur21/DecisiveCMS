@@ -3,18 +3,16 @@ package com.scoopwhoop.nlp
 import java.util.Properties
 import edu.stanford.nlp.ling.CoreAnnotations.{LemmaAnnotation, TokensAnnotation, SentencesAnnotation}
 import edu.stanford.nlp.pipeline.{Annotation, StanfordCoreNLP}
-import org.apache.spark.rdd.RDD
 import scala.collection.JavaConversions._
 import scala.collection.mutable.{HashMap, ArrayBuffer}
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkContext
 import org.apache.spark.mllib.feature.HashingTF
 import org.apache.spark.mllib.linalg.{Vectors,Vector}
 import org.apache.spark.mllib.feature.IDF
 
 object FeatureVectorExtraction {
-
+    /*
     private def termDocWeight(termFrequencyInDoc: Int, totalTermsInDoc: Int, termFreqInCorpus: Int, totalDocs: Int): Double = {
         val tf = termFrequencyInDoc.toDouble / totalTermsInDoc
         val docFreq = totalDocs.toDouble / termFreqInCorpus
@@ -94,6 +92,6 @@ object FeatureVectorExtraction {
         val tfidf: RDD[Vector] = idf.transform(tf)
         tfidf
     }
-
+    */
 
 }
