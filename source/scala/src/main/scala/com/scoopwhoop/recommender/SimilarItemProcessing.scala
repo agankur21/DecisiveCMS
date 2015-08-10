@@ -23,7 +23,7 @@ class SimilarItemProcessing extends ApplicationProcesses {
         val ratingsModule = new NormalizedUserItemRating
         val recommenderModule = new ItemItemSimilarity
         val eventsData = getEventsData(sparkContext, tableName, startDate, endDate)
-        val ratingsData = calculateNormalisedRating(eventsData, ratingsModule)
+            val ratingsData = calculateNormalisedRating(eventsData, ratingsModule)
         val similarityRatings = calculateRecommendedRatings(ratingsData, recommenderModule)
         return similarityRatings
     }

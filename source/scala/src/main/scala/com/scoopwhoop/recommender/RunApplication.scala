@@ -10,7 +10,7 @@ object RunApplication {
         conf.set("spark.cassandra.input.split.size_in_mb", "50000")
         val sparkContext = new SparkContext(conf)
         val similarItemProcessing  = new SimilarItemProcessing
-        val similarityRatings = similarItemProcessing.getRecommendations(sparkContext,"events","2015-06-01","2015-01-06")
+        val similarityRatings = similarItemProcessing.getRecommendations(sparkContext,"events","2015-06-01","2015-06-01")
         similarItemProcessing.updateCassandraTable("dcms","pages_preferred_together",similarityRatings,"2015-06-01","2015-06-01")
         sparkContext.stop()
     }

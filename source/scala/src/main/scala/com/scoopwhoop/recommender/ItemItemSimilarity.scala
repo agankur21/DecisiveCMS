@@ -44,16 +44,16 @@ class ItemItemSimilarity extends RecommenderAlgorithmModule {
         val numItems = this.itemIdMap.size
         val numUsers = this.userIdMap.size
         val userVectors = userIdItemIdRating.groupBy(_._1)
-                        .filter {case(userId:Long,itemSeq : Iterable[(Long,Long,Double)]) => itemSeq.size > 0 }
-                        .map{ case(userId:Long,itemSeq : Iterable[(Long,Long,Double)]) => Vectors.sparse(numItems,itemSeq.map(x => (x._2.toInt,x._3)).toSeq)  }
+            .filter {case(userId:Long,itemSeq : Iterable[(Long,Long,Double)]) => itemSeq.size > 0 }
+            .map{ case(userId:Long,itemSeq : Iterable[(Long,Long,Double)]) => Vectors.sparse(numItems,itemSeq.map(x => (x._2.toInt,x._3)).toSeq)  }
         userVectors.persist()
         userIdItemIdRating.unpersist()
+        Logger.logInfo(s"Total number of users : $numUsers")
+        Logger.logInfo(s"Total number of items : $numItems")
         val numberOfEntriesInFirstRow = userVectors.first().size
         val numberOfRows = userVectors.count()
         Logger.logInfo(s"Columns in first row : $numberOfEntriesInFirstRow")
         Logger.logInfo(s"Number of entries in the user vectors: $numberOfRows")
-        Logger.logInfo(s"Total number of users : $numUsers")
-        Logger.logInfo(s"Total number of items : $numItems")
         val ratingRowMatrix = new RowMatrix(userVectors,numUsers,numItems)
         val itemItemCoordinateMatrix = ratingRowMatrix.columnSimilarities(0.3)
         val similarityEntries = itemItemCoordinateMatrix.entries.distinct.map { case (x: MatrixEntry) =>
