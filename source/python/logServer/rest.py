@@ -5,11 +5,16 @@ import time_uuid
 import uuid
 from cassandra.cluster import Cluster
 from flask import Flask, request
+from cassandra.cqlengine import connection
+from cassandra.cqlengine.management import sync_table
+from models import Logs
 
 def _connect_to_cassandra(keyspace):
 
-    cluster = Cluster(contact_points=['127.0.0.1',],port=9042,protocol_version=3)
-    session = cluster.connect(keyspace)
+    #cluster = Cluster(contact_points=['127.0.0.1',],port=9042,protocol_version=3)
+    #session = cluster.connect(keyspace)
+    connection.setup(['127.0.0.1'], "keyspace", protocol_version=3)
+    sync_table(Logs)
 
     return session
 
@@ -18,7 +23,7 @@ Create the Flask application, connect to Cassandra, and then
 set up all the routes.
 """
 app = Flask(__name__)
-session = _connect_to_cassandra('logapp')
+#session = _connect_to_cassandra('logapp')
 
 @app.route('/api/logs', methods=['GET'])
 def get_logs():
@@ -70,7 +75,8 @@ def put_logs():
                'time': time_uuid.TimeUUID(value_parsed['time']),
                'ip': str(value_parsed['ip']) }
 
-    session.execute(query, values)
+    Logs.create(product_id=str(value_parsed['log']),ip=str(value_parsed['ip']),time=str(value_parsed['ip']))
+    #session.execute(query, values)
     return ""
 
 if __name__ == '__main__':
