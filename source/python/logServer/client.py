@@ -20,9 +20,9 @@ def _generate_random(log_id, num_ips, distribution="uniform", days=0):
 
     for k in range(num_ips):
         if distribution == "normal":
-            log_value = random.gauss(0, 1)
+            log_value = "10.2.0.1"
         elif distribution == "extreme":
-            log_value = random.gauss(0, 0.2)
+            log_value = "10.2.0.1"
 
         # Create a timestamp sometime in the past.
         day = datetime.datetime.utcnow() - datetime.timedelta(days=days)
@@ -31,7 +31,7 @@ def _generate_random(log_id, num_ips, distribution="uniform", days=0):
         # Encode our JSON values.
         values = {'value': json.dumps( { 'log':str(log_id),
                                          'time': str(ts),
-                                         'ip': log_value} ) }
+                                         'ip': str(log_value)} ) }
 
         # Post the data to the webserver.
         requests.post(REST_SERVER + '/api/logs', data=values)
