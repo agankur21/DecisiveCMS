@@ -7,7 +7,8 @@ from cassandra.cluster import Cluster
 from flask import Flask, request
 
 def _connect_to_cassandra(keyspace):
-    cluster = Cluster(contact_points=['127.0.0.1',],port=9042)
+
+    cluster = Cluster(contact_points=['127.0.0.1',],port=9042,protocol_version=3)
     session = cluster.connect(keyspace)
 
     return session
@@ -19,7 +20,7 @@ set up all the routes.
 app = Flask(__name__)
 session = _connect_to_cassandra('logapp')
 
-@app.route('/api/s', methods=['GET'])
+@app.route('/api/logs', methods=['GET'])
 def get_logs():
     """
     Fetch the log data from the Cassandra cluster.
@@ -67,7 +68,7 @@ def put_logs():
 
     values = { 'log_id':str(value_parsed['log']),
                'time': time_uuid.TimeUUID(value_parsed['time']),
-               'ip': float(value_parsed['ip']) }
+               'ip': str(value_parsed['ip']) }
 
     session.execute(query, values)
     return ""
