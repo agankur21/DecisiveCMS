@@ -1,1 +1,2 @@
-{'referer_info': '', 'user_agent': '', 'event_properties': '', 'product_id': u'unique_product2', 'time': '', 'ip': '', 'cookie_id': '', 'page_id': '', 'id': 5, 'event_type': ''}{'referer_info': '', 'user_agent': '', 'event_properties': '', 'product_id': u'unique_product2', 'time': '', 'ip': '', 'cookie_id': '', 'page_id': '', 'id': 3, 'event_type': ''}
+{"data":"ktb"}{"data1":"ktb"}{"data1":"ktb"}{"data2":"ktb"}{"data2":"ktb"}
+{"data2":"ktb"}
