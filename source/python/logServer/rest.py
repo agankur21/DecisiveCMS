@@ -7,18 +7,6 @@ from cassandra.cluster import Cluster
 from flask import Flask, request
 
 def _connect_to_cassandra(keyspace):
-    """
-    Connect to the Cassandra cluster and return the session.
-    """
-    """
-    if 'BACKEND_STORAGE_IP' in os.environ:
-        host = os.environ['BACKEND_STORAGE_IP']
-        cluster = Cluster([host])
-    else:
-        #host = '127.0.0.1:9042'
-        cluster = Cluster(contact_points=['127.0.0.1',],port=9042)
-    """
-    #cluster = Cluster([host])
     cluster = Cluster(contact_points=['127.0.0.1',],port=9042)
     session = cluster.connect(keyspace)
 
