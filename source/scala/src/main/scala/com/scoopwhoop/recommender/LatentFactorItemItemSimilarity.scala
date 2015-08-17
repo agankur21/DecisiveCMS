@@ -2,15 +2,16 @@ package com.scoopwhoop.recommender
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.mllib.linalg.distributed.{RowMatrix,MatrixEntry}
-import org.apache.spark.mllib.linalg.{Vectors}
+import org.apache.spark.mllib.linalg.{Matrix, Vectors,Vector}
 import com.scoopwhoop.logger.Logger
 
 
-class ItemItemSimilarity extends RecommenderAlgorithmModule {
-    
+class LatentFactorItemItemSimilarity extends RecommenderAlgorithmModule {
+
     var userIdMap = scala.collection.Map[String, Long]()
     var itemIdMap  = scala.collection.Map[String, Long]()
     var idItemMap = scala.collection.Map[Long, String]()
+    
     def convertStringToID(stringElement: String, map: scala.collection.Map[String, Long]): Long = {
         map.getOrElse(stringElement, -1)
     }
@@ -18,7 +19,7 @@ class ItemItemSimilarity extends RecommenderAlgorithmModule {
     def convertIDToString(id: Long, map: scala.collection.Map[Long, String]): String = {
         map.getOrElse(id, "")
     }
-    
+
     def encodeUserItemToId(ratings: RDD[(String, String, Float)]):RDD[(Long,Long,Double)] = {
         this.userIdMap = ratings.map(_._1).distinct.zipWithIndex.collectAsMap()
         this.itemIdMap = ratings.map(_._2).distinct.zipWithIndex.collectAsMap()
@@ -29,8 +30,7 @@ class ItemItemSimilarity extends RecommenderAlgorithmModule {
         }
         userIdItemIdRating
     }
-    
-    
+
     def getRowMatrix(userIdItemIdRating: RDD[(Long,Long,Double)],numRows:Int,numColumns:Int) : RowMatrix = {
         userIdItemIdRating.persist()
         val userVectors = userIdItemIdRating.groupBy(_._1)
@@ -46,12 +46,14 @@ class ItemItemSimilarity extends RecommenderAlgorithmModule {
         return ratingRowMatrix
     }
 
+    
     /** Calculates the cosine similarity of each item with other item based on user preferences
       * @param sparkContext
       * @param inputData
       * @return An RDD for (String,String,Float)
       */
     def calculatePredictedRating(ratings: RDD[(String, String, Float)]): RDD[(String, String, Float)] = {
+        val sparkContext = ratings.sparkContext
         ratings.persist()
         val userIdItemIdRating = encodeUserItemToId(ratings)
         ratings.unpersist()
@@ -60,11 +62,24 @@ class ItemItemSimilarity extends RecommenderAlgorithmModule {
         Logger.logInfo(s"Total number of users : $numUsers")
         Logger.logInfo(s"Total number of items : $numItems")
         val ratingRowMatrix = getRowMatrix(userIdItemIdRating,numUsers,numItems)
-        val itemItemCoordinateMatrix = ratingRowMatrix.columnSimilarities(0.3)
-        val similarityEntries = itemItemCoordinateMatrix.entries.distinct.map { case (x: MatrixEntry) =>
-            (convertIDToString(x.i, this.idItemMap), convertIDToString(x.j, this.idItemMap), x.value.toFloat)
+        val svd = ratingRowMatrix.computeSVD(100,computeU = false)
+        val itemMatrix :Matrix= svd.V
+        val eigValues: Vector = svd.s
+        val normalisedWeightedItemMatrix = CommonFunctions.rowsNormalized(CommonFunctions.multiplyByDiagonalMatrix(itemMatrix,eigValues))
+        val rowNormVector = CommonFunctions.getRowNorms(normalisedWeightedItemMatrix)
+        var similarityIndices : List[(Int,Int)] = List[(Int,Int)]()
+        for(i <- 0 until rowNormVector.length){
+            for(j <- 0 until i){
+                similarityIndices = (i,j) :: similarityIndices
+            }
+        }
+        val distributedIndices = sparkContext.parallelize(similarityIndices)
+        val cosineSimilarityValues = distributedIndices.map{ case(i:Int,j:Int) => (i,j,CommonFunctions.dotProduct(normalisedWeightedItemMatrix(i,::).t,normalisedWeightedItemMatrix(j,::).t)/(rowNormVector(i) * rowNormVector(j)) ) }
+        val similarityEntries = cosineSimilarityValues.map { case (i:Int,j:Int,value:Double) =>
+            (convertIDToString(i, this.idItemMap), convertIDToString(j, this.idItemMap), value.toFloat)
         }
         return similarityEntries;
     }
 
 }
+

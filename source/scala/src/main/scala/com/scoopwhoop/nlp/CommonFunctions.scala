@@ -2,7 +2,6 @@ package com.scoopwhoop.nlp
 
 import org.apache.spark.mllib.linalg.{Vectors, Vector}
 import org.apache.spark.mllib.linalg.distributed.RowMatrix
-
 import scala.io.Source
 
 object CommonFunctions {

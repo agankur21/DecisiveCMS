@@ -21,7 +21,7 @@ class SimilarItemProcessing extends ApplicationProcesses {
 
     def getRecommendations(sparkContext: SparkContext, tableName: String, startDate: String, endDate: String): RDD[(String, String, Float)] = {
         val ratingsModule = new NormalizedUserItemRating
-        val recommenderModule = new ItemItemSimilarity
+        val recommenderModule = new LatentFactorItemItemSimilarity
         val eventsData = getEventsData(sparkContext, tableName, startDate, endDate)
             val ratingsData = calculateNormalisedRating(eventsData, ratingsModule)
         val similarityRatings = calculateRecommendedRatings(ratingsData, recommenderModule)
