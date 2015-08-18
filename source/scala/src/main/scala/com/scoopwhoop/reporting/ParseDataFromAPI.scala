@@ -53,7 +53,7 @@ object ParseDataFromAPI {
             val jsonObj = parse(jsonData)
             val posts = jsonObj.extract[Posts]
             val pages = posts.posts.map { case (page: CommonFunctions.Page) =>
-                CommonFunctions.Page(page.title, page.link, page.author, page.pubon, page.s_heading, page.category,
+                CommonFunctions.Page(page.post_id,page.title, page.link, page.author, page.pubon, page.s_heading, page.category,
                     page.tags, getTextFromXMLContent(page.content, page.title))
             }
             return pages;

@@ -32,6 +32,7 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
     
 
     CREATE TABLE IF NOT EXISTS pages(
+        post_id                     text PRIMARY KEY,
         title                       text,
         url                         text,
         published_date              text,
@@ -40,7 +41,6 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         category                    list<text>,
         tags                        list<text>,
         content                     text,
-        PRIMARY KEY (title,url)
     );
 
 
