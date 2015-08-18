@@ -76,7 +76,7 @@ class UpdateCassandraData extends Serializable {
 
     def updatePageData(data: RDD[CommonFunctions.Page], keySpace: String, table: String): Unit = {
         data.map { case (x: CommonFunctions.Page) => (StringEscapeUtils.unescapeHtml4(x.title).replaceAll("\\p{C}", ""), URLDecoder.decode(x.link, "UTF-8"), x.author, x.pubon, x.s_heading, x.category, x.tags)}.filter(_._1 != "").saveToCassandra(keySpace, table,
-            SomeColumns("post_id","title", "url", "author", "published_date", "super_heading", "category", "tags"))
+            SomeColumns("post_id","title", "url", "author", "published_date", "super_heading", "category", "tags","content"))
 
     }
 

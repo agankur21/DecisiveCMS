@@ -40,7 +40,7 @@ ${DATASTORE_HOME}/bin/cqlsh -e "
         super_heading               text,
         category                    list<text>,
         tags                        list<text>,
-        content                     text,
+        content                     text
     );
 
 
