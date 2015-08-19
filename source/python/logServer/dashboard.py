@@ -4,13 +4,12 @@ import json
 from bson import json_util
 from pymongo import MongoClient
 from jinja2 import Environment, FileSystemLoader
-from Models import Logs , IP ,UserAgent ,UnresolvedIP
-import Models
+from models import Logs , IP ,UserAgent ,UnresolvedIP
+import models
 from cassandra.cqlengine.management import sync_table
 from cassandra.cqlengine import connection
 import time_uuid
 import time
-import Models;
 import utils
 from cassandra.cqlengine.query import DoesNotExist
 
@@ -84,33 +83,33 @@ class Logs:
 
         # saving log into database
 
-        log = Models.Logs(product_id=product_id, ip=ip, time=time, page_id=page_id, cookie_id=cookie_id,
+        log = models.Logs(product_id=product_id, ip=ip, time=time, page_id=page_id, cookie_id=cookie_id,
                           user_agent=user_agent, author=author, category=category, event_where=event_where,
                           event_desc=event_desc, referer_domain=referer_domain, referer_url=referer_url)
         log.save()
 
 
         # saving IP info into database
-        ip_filter = Models.IP.filter(ip=ip)
+        ip_filter = models.IP.filter(ip=ip)
         ip_obj = ip_filter.first()
         if (ip_obj is None):
             location_info = utils.getLocationInfo(ip)
             if location_info is not None:
                 (region, city, country, latitude, longitude) = location_info
-                ip_obj = Models.IP(ip=ip,region=region, city=city, country=country, latitude=latitude, longitude=longitude)
+                ip_obj = models.IP(ip=ip,region=region, city=city, country=country, latitude=latitude, longitude=longitude)
                 ip_obj.save()
             else:
-                ip_obj = Models.UnresolvedIP(ip=ip)
+                ip_obj = models.UnresolvedIP(ip=ip)
                 ip_obj.save()
 
 
 
         #saving useragent into database
-        ua_filter = Models.UserAgent.filter(ua=user_agent)
+        ua_filter = models.UserAgent.filter(ua=user_agent)
         ua_obj = ua_filter.first()
         if (ua_obj is None):
             (browser, browser_version, os, os_version, device, device_type) = utils.getDeviceInfo(user_agent)
-            ua_obj = Models.UserAgent(ua=user_agent,browser=browser, browser_version=browser_version, os=os, os_version=os_version,
+            ua_obj = models.UserAgent(ua=user_agent,browser=browser, browser_version=browser_version, os=os, os_version=os_version,
                                       device=device, device_type=device_type)
             ua_obj.save()
 
