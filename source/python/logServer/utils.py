@@ -1,5 +1,7 @@
 import geoip2.database
 from user_agents import parse
+from datetime import datetime
+import time
 geocity_data_path="/home/ec2-user/GeoLiteCity/GeoLite2-City.mmdb"
 
 def getDeviceInfo(ua_string):
@@ -31,4 +33,6 @@ def getLocationInfo(ip):
 	reader.close()
 	return (region,city,country,latitude,longitude)
 
+def getTimeStampFromTimeString(time_str):
+    return int(time.mktime(datetime.strptime(time_str, "%Y %d %m %H %M").timetuple()))
 
