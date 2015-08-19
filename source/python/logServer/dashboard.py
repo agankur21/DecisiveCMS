@@ -67,7 +67,7 @@ class Logs:
 
         product_id = str(value_parsed.get('product_id', ""))
         ip = str(value_parsed.get('ip', ""))
-        time = str(value_parsed.get('time', "123456"))
+        time = utils.getTimeStampFromTimeString(str(value_parsed.get('time', "2015 18 7 17 37")))
         page_id = str(value_parsed.get('page_id', ""))
         cookie_id = str(value_parsed.get('cookie_id', ""))
         user_agent = str(value_parsed.get('user_agent', ""))

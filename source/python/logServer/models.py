@@ -7,7 +7,7 @@ class Logs(Model):
     id = columns.UUID(primary_key=True, default=uuid.uuid4)
     product_id  = columns.Text()
     ip = columns.Text()
-    time = columns.Text()
+    time = columns.BigInt (primary_key=True,clustering_order="DESC")
     page_id= columns.Text()
     cookie_id= columns.Text()
     user_agent=columns.Text()

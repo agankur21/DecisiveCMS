@@ -2,6 +2,8 @@ import geoip2.database
 from geoip2.errors import AddressNotFoundError
 from user_agents import parse
 geocity_data_path="/Users/rohit/office/GeoLite2-City.mmdb"
+from datetime import datetime
+import time
 
 def getDeviceInfo(ua_string):
 	user_agent = parse(ua_string)
@@ -36,4 +38,6 @@ def getLocationInfo(ip):
 	reader.close()
 	return (region,city,country,latitude,longitude)
 
+def getTimeStampFromTimeString(time_str):
+    return long(time.mktime(datetime.strptime(time_str, "%Y %d %m %H %M").timetuple()))
 
