@@ -1,6 +1,7 @@
 import geoip2.database
+from geoip2.errors import AddressNotFoundError
 from user_agents import parse
-geocity_data_path="/home/ec2-user/GeoLiteCity/GeoLite2-City.mmdb"
+geocity_data_path="/Users/rohit/office/GeoLite2-City.mmdb"
 
 def getDeviceInfo(ua_string):
 	user_agent = parse(ua_string)
@@ -21,8 +22,12 @@ def getDeviceInfo(ua_string):
 	return (browser,browser_version,os,os_version,device,device_type)
 
 def getLocationInfo(ip):
-	reader = geoip2.database.Reader(geocity_data_path)
-	response = reader.city(ip)
+    reader = geoip2.database.Reader(geocity_data_path)
+    response = None
+    try:
+	    response = reader.city(ip)
+    except AddressNotFoundError:
+        return None
 	region = response.subdivisions.most_specific.name
 	city = response.city.name
 	country = response.country.name
