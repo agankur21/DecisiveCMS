@@ -1,7 +1,7 @@
 import geoip2.database
 from geoip2.errors import AddressNotFoundError
 from user_agents import parse
-geocity_data_path="/Users/rohit/office/GeoLite2-City.mmdb"
+geocity_data_path="/data/GeoLite2-City.mmdb"
 from datetime import datetime
 import time
 

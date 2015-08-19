@@ -1,30 +1,28 @@
 import web
 import os
 import json
+base_path = "/mnt/git-repo/DecisiveCMS/source/python/logServer" 
+import sys
+sys.path.append(base_path)
+from jinja2 import Environment,FileSystemLoader
 from models import Logs , IP ,UserAgent ,UnresolvedIP
 import models
 from cassandra.cqlengine.management import sync_table
 from cassandra.cqlengine import connection
-import time_uuid
 import time
 import utils
 from cassandra.cqlengine.query import DoesNotExist
 
-
 urls = (
+    '/' ,'hello',	
     '/logs', 'Logs',
-    '/', 'index',
+    '/index', 'index',
     '/donorschoose/project', 'Projects'
 
 )
 
 app = web.application(urls, globals())
 
-"""MONGODB_HOST = 'localhost'
-MONGODB_PORT = 27017
-DBS_NAME = 'logapp'
-COLLECTION_NAME = 'logs'
-"""
 
 def _connect_to_cassandra(keyspace):
     connection.setup(['10.2.3.10'], keyspace, protocol_version=3)
@@ -42,15 +40,18 @@ _connect_to_cassandra('logapp')
 def render_template(template_name, **context):
     extensions = context.pop('extensions', [])
     globals = context.pop('globals', {})
-
+    template_path = os.path.join(base_path,"templates") 	
     jinja_env = Environment(
-        loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')),
+        loader=FileSystemLoader(template_path),
         extensions=extensions,
     )
     jinja_env.globals.update(globals)
 
     return jinja_env.get_template(template_name).render(context)
 
+class hello:
+    def GET(self):
+        return 'Hello, '  + '!'
 
 class Logs:
     def POST(self):
@@ -113,7 +114,7 @@ class Logs:
 
 class index:
     def GET(self):
-        return render_template('index.html')
+        return  render_template("index.html")
 
 
 class Projects:
@@ -132,5 +133,6 @@ class Projects:
         return ""
 
 
-if __name__ == "__main__":
-    app.run()
+application = app.wsgifunc()
+#if __name__ == "__main__":
+    #app.run()
