@@ -7,6 +7,7 @@ class Logs(Model):
     id = columns.UUID(primary_key=True, default=uuid.uuid4)
     product_id  = columns.Text()
     ip = columns.Text()
+    date = columns.Text(primary_key=True,clustering_order="DESC")
     time = columns.BigInt (primary_key=True,clustering_order="DESC")
     page_id= columns.Text()
     cookie_id= columns.Text()
@@ -17,6 +18,7 @@ class Logs(Model):
     event_desc =columns.Text()
     referer_url =columns.Text()
     referer_domain= columns.Text()
+
 
 
 

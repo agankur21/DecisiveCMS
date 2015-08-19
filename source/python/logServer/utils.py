@@ -41,3 +41,7 @@ def getLocationInfo(ip):
 def getTimeStampFromTimeString(time_str):
     return long(time.mktime(datetime.strptime(time_str, "%Y %d %m %H %M").timetuple()))
 
+def getDayFromTimeStamp(timestamp):
+    return str(datetime.fromtimestamp(float(timestamp)).strftime("%Y-%m-%d"))
+
+
