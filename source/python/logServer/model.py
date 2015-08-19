@@ -1,6 +1,6 @@
 __author__ = 'rohit'
 
-from mongoengine import *
+"""from mongoengine import *
 from Models import Logs
 
 connect('logapp', host='localhost', port=27017)
@@ -11,7 +11,7 @@ class User(Document):
     last_name = StringField(max_length=50)
     password = StringField(max_length=200)
 
-
+"""
 class Article:
 
     webPageViewCount =0;
