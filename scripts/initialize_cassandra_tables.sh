@@ -17,98 +17,28 @@ checkStatusANDErrMsgExit "ERROR : Creating Keyspace";
 loggerInfo "Creating Tables in Keyspace dcms";
 ${DATASTORE_HOME}/bin/cqlsh -e "
     USE dcms;
-    
-    CREATE TABLE IF NOT EXISTS users(
-        user_id                     text PRIMARY KEY,
-        browser                     text,
-        browser_version             text,
-        region                      text,
-        city                        text,
-        country_code                text,
-        os                          text,
-        device                      text,
-        device_type                 text
-    );
-    
 
-    CREATE TABLE IF NOT EXISTS pages(
-        post_id                     text PRIMARY KEY,
-        title                       text,
-        url                         text,
-        published_date              text,
-        author                      text,
-        super_heading               text,
-        category                    list<text>,
-        tags                        list<text>,
-        content                     text
-    );
-
-
-    CREATE TABLE IF NOT EXISTS google_analytics_data(
-        title                       text,
-        start_date                  text,
-        end_date                    text,
-        category                    text,
-        page_views                  int,
-        unique_page_views           int,
-        avg_time_per_page           double,
-        entrances                   int,
-        bounce_rate                 double,
-        exit                        double,
-        page_value                  double,
-        PRIMARY KEY (title,start_date,end_date,category)
-    );
-    
-        
     CREATE TABLE IF NOT EXISTS events(
-        title                       text,
-        user_id                     text,
-        event                       text,
+        product_id                  text,
+        event_id                    uuid,
+        event_type                  text,
         time                        bigint,
-        region                      text,
-        city                        text,
-        country_code                text,
+        post_id                     text,
+        cookie_id                   text,
+        event_where                 text,
+        event_desc                  text,
+        user_agent                  text,
+        referrer_url                text,
+        referrer_domain             text,
+        author                      text,
         category                    text,
-        from_url                    text,
-        event_destination           text,
-        screen_location             text,
-        referring_domain            text,
-        PRIMARY KEY (title,user_id,event,time)
+        ip                          text,
+        PRIMARY KEY (product_id,time,event_id,event_type,post_id,cookie_id)
     )
+    WITH CLUSTERING ORDER BY (time DESC);
 
-    ;
+
         
-    CREATE TABLE IF NOT EXISTS google_category_statistics(
-        category                    text,
-        start_date                  text,
-        end_date                    text,
-        desktop_views               int,
-        mobile_views                int,
-        clicks                      int,
-        shares                      int,
-        avg_time                    double,
-        bounce_rate                 double,
-        PRIMARY KEY (category,start_date,end_date)
-    )
-    ;
-    
-    CREATE TABLE IF NOT EXISTS tag_statistics(
-        tag                         text PRIMARY KEY,
-        region                      list<text>,
-        day                         list<text>,
-        time                        list<text>
-    );
-    
-    
-    CREATE TABLE IF NOT EXISTS pages_preferred_together(
-        title                   text,
-        start_date              text,
-        end_date                text,
-        similar_pages           list<text>,
-        PRIMARY KEY (title,start_date,end_date)
-    )
-            
-    
-    
+
 
 "

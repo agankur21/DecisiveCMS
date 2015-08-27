@@ -14,7 +14,7 @@ import java.util.Arrays
 
 object CommonFunctions extends Serializable {
 
-    case class Page(postid:String,title: String, link: String, author: String, pubon: String, s_heading: String, category: List[String], tags: List[String], content: String)
+
 
     def getDayWeek(timestamp: Long): String = {
         if (timestamp == 0) return ""
@@ -154,25 +154,8 @@ object CommonFunctions extends Serializable {
         data.saveAsTextFile(path);
     }
 
-    def getEventCount(event: String): (Int, Int, Int, Int) = {
-        event match {
-            case "Desktop PVs" => (1, 0, 0, 0)
-            case "Mobile PVs" => (0, 1, 0, 0)
-            case "itemClick" => (0, 0, 1, 0)
-            case "shareClick" => (0, 0, 0, 1)
-            case _ => (0, 0, 0, 0)
-        }
-    }
 
-    def processJoinedRowEventGoogle(data: (CassandraRow, CassandraRow)): (String, String, String, Int, Int, Int, Int, Int, Double, Int, Double, Int) = {
-        val (eventRow, gaRow) = data
-        val eventCount: (Int, Int, Int, Int) = getEventCount(CommonFunctions.getStringFromCassandraRow(eventRow, "event"))
-        val output = (CommonFunctions.getStringFromCassandraRow(gaRow, "category"), CommonFunctions.getStringFromCassandraRow(gaRow, "start_date"),
-            CommonFunctions.getStringFromCassandraRow(gaRow, "end_date"), eventCount._1, eventCount._2, eventCount._3, eventCount._4, gaRow.getInt("page_views"),
-            gaRow.getDouble("avg_time_per_page"), gaRow.getInt("entrances"), gaRow.getDouble("bounce_rate") * gaRow.getInt("entrances"),
-            1)
-        output
-    }
+
 
 
 }

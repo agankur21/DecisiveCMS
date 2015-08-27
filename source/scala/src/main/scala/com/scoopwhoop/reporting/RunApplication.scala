@@ -14,11 +14,12 @@ object RunApplication {
         //val googleAnalyticsData = updateData.getGoogleAnalyticsData(sparkContext, "/home/cassandra/google_data")
         //updateData.updateEventsData(eventsData, "dcms", "events")
         //updateData.updateUsersData(eventsData, "dcms", "users")
-        updateData.getAndUpdatePagesData(sparkContext, "dcms", "pages")
+        //updateData.getAndUpdatePagesData(sparkContext, "dcms", "pages")
         //updateData.updateGoogleAnalyticsData(googleAnalyticsData, "dcms", "google_analytics_data")
         //val statisticalProcessing = new StatisticalProcessing()
         //statisticalProcessing.mergeEventGoogleData(sparkContext, "dcms", "events", "google_analytics_data", "google_category_statistics")
         //statisticalProcessing.mergeEventsPageData(sparkContext, "dcms", "events", "pages", "tag_statistics")
         sparkContext.stop()
     }
+
 }

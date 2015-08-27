@@ -74,8 +74,8 @@ class UpdateCassandraData extends Serializable {
         Logger.logInfo(s"Cassandra Table $keySpace.$table Updated !!")
     }
 
-    def updatePageData(data: RDD[CommonFunctions.Page], keySpace: String, table: String): Unit = {
-        data.map { case (x: CommonFunctions.Page) => (x.postid,StringEscapeUtils.unescapeHtml4(x.title).replaceAll("\\p{C}", ""), URLDecoder.decode(x.link, "UTF-8"), x.author, x.pubon, x.s_heading, x.category, x.tags,x.content)}.filter(_._1 != "").saveToCassandra(keySpace, table,
+    def updatePageData(data: RDD[Models.Page], keySpace: String, table: String): Unit = {
+        data.map { case (x: Models.Page) => (x.postid,StringEscapeUtils.unescapeHtml4(x.title).replaceAll("\\p{C}", ""), URLDecoder.decode(x.link, "UTF-8"), x.author, x.pubon, x.s_heading, x.category, x.tags,x.content)}.filter(_._1 != "").saveToCassandra(keySpace, table,
             SomeColumns("post_id","title", "url", "author", "published_date", "super_heading", "category", "tags","content"))
 
     }
@@ -84,10 +84,10 @@ class UpdateCassandraData extends Serializable {
     def getAndUpdatePagesData(sparkContext: SparkContext, keySpace: String, table: String): Unit = {
         val sqlContext = new org.apache.spark.sql.SQLContext(sparkContext)
         import sqlContext.implicits._
-        var listPages: List[CommonFunctions.Page] = List()
+        var listPages: List[Models.Page] = List()
         var offset: Int = 0
         val limit: Int = 100
-        var pageDataFrame: RDD[CommonFunctions.Page] = null
+        var pageDataFrame: RDD[Models.Page] = null
         Logger.logInfo(s"Updating the Cassandra Table $keySpace.$table............. ")
         do {
             listPages = ParseDataFromAPI.getPagesFromAPI(offset, limit)

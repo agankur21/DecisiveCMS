@@ -12,7 +12,7 @@ import scala.xml.XML
 object ParseDataFromAPI {
 
 
-    case class Posts(posts: List[CommonFunctions.Page])
+
 
     val apiForSingleURLParsing = "http://www.scoopwhoop.com/api/v1/?vendor=android&type=single&url="
     val apiForMultipleURLParsing = "http://www.scoopwhoop.com/api/v1.1/?vendor=es&type=articles"
@@ -45,15 +45,15 @@ object ParseDataFromAPI {
         }
     }
 
-    def getPagesFromAPI(offset: Int, limit: Int): List[CommonFunctions.Page] = {
+    def getPagesFromAPI(offset: Int, limit: Int): List[Models.Page] = {
         implicit val formats = DefaultFormats
         val api = apiForMultipleURLParsing + "&offset=" + offset.toString + "&limit=" + limit.toString + "&content=1"
         val jsonData = Source.fromURL(api, "UTF-8").mkString
         try {
             val jsonObj = parse(jsonData)
             val posts = jsonObj.extract[Posts]
-            val pages = posts.posts.map { case (page: CommonFunctions.Page) =>
-                CommonFunctions.Page(page.postid,page.title, page.link, page.author, page.pubon, page.s_heading, page.category,
+            val pages = posts.posts.map { case (page: Models.Page) =>
+                Models.Page(page.postid,page.title, page.link, page.author, page.pubon, page.s_heading, page.category,
                     page.tags, getTextFromXMLContent(page.content, page.title))
             }
             return pages;
