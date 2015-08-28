@@ -12,8 +12,6 @@ import scala.xml.XML
 object ParseDataFromAPI {
 
 
-
-
     val apiForSingleURLParsing = "http://www.scoopwhoop.com/api/v1/?vendor=android&type=single&url="
     val apiForMultipleURLParsing = "http://www.scoopwhoop.com/api/v1.1/?vendor=es&type=articles"
 
@@ -51,9 +49,9 @@ object ParseDataFromAPI {
         val jsonData = Source.fromURL(api, "UTF-8").mkString
         try {
             val jsonObj = parse(jsonData)
-            val posts = jsonObj.extract[Posts]
+            val posts = jsonObj.extract[Models.Posts]
             val pages = posts.posts.map { case (page: Models.Page) =>
-                Models.Page(page.postid,page.title, page.link, page.author, page.pubon, page.s_heading, page.category,
+                Models.Page(page.postid, page.title, page.link, page.author, page.pubon, page.s_heading, page.category,
                     page.tags, getTextFromXMLContent(page.content, page.title))
             }
             return pages;

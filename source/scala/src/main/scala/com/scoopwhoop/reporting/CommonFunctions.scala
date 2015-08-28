@@ -15,7 +15,6 @@ import java.util.Arrays
 object CommonFunctions extends Serializable {
 
 
-
     def getDayWeek(timestamp: Long): String = {
         if (timestamp == 0) return ""
         val date_time = new DateTime(timestamp * 1000L);
@@ -153,9 +152,6 @@ object CommonFunctions extends Serializable {
         }
         data.saveAsTextFile(path);
     }
-
-
-
 
 
 }
